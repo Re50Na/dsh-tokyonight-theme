@@ -8,28 +8,27 @@ import { syncTuiThemes } from '../src/tui-themes.ts'
 /** The repo's shipped theme directory (src/.. /themes). */
 const BUNDLED = fileURLToPath(new URL('../themes', import.meta.url))
 
-const scratch = mkdtempSync(join(tmpdir(), 'catppuccin-tui-themes-'))
+const scratch = mkdtempSync(join(tmpdir(), 'tokyonight-tui-themes-'))
 afterAll(() => rmSync(scratch, { recursive: true, force: true }))
 
 describe('syncTuiThemes', () => {
   it('no-ops when the TUI data dir does not exist (web-only user)', () => {
     const home = join(scratch, 'missing-home')
     expect(syncTuiThemes(BUNDLED, home)).toEqual([])
-    expect(() => readFileSync(join(home, 'themes', 'catppuccin-mocha.json'))).toThrow()
+    expect(() => readFileSync(join(home, 'themes', 'tokyonight-night.json'))).toThrow()
   })
 
-  it('copies all four themes into a fresh TUI home', () => {
+  it('copies all three themes into a fresh TUI home', () => {
     const home = join(scratch, 'fresh-home')
     mkdirSync(home)
     const written = syncTuiThemes(BUNDLED, home)
     expect(written.sort()).toEqual([
-      'catppuccin-frappe.json',
-      'catppuccin-latte.json',
-      'catppuccin-macchiato.json',
-      'catppuccin-mocha.json',
+      'tokyonight-light.json',
+      'tokyonight-night.json',
+      'tokyonight-storm.json',
     ])
-    const dest = readFileSync(join(home, 'themes', 'catppuccin-mocha.json'), 'utf8')
-    expect(dest).toBe(readFileSync(join(BUNDLED, 'catppuccin-mocha.json'), 'utf8'))
+    const dest = readFileSync(join(home, 'themes', 'tokyonight-night.json'), 'utf8')
+    expect(dest).toBe(readFileSync(join(BUNDLED, 'tokyonight-night.json'), 'utf8'))
   })
 
   it('is idempotent: an in-sync home yields no writes', () => {
@@ -39,11 +38,11 @@ describe('syncTuiThemes', () => {
 
   it('backs up a drifted owned file and writes the shipped copy (default conflict = backup)', () => {
     const home = join(scratch, 'fresh-home')
-    const dest = join(home, 'themes', 'catppuccin-mocha.json')
+    const dest = join(home, 'themes', 'tokyonight-night.json')
     writeFileSync(dest, '{ "hijacked": true }')
-    expect(syncTuiThemes(BUNDLED, home)).toEqual(['catppuccin-mocha.json'])
+    expect(syncTuiThemes(BUNDLED, home)).toEqual(['tokyonight-night.json'])
     expect(readFileSync(dest, 'utf8')).toBe(
-      readFileSync(join(BUNDLED, 'catppuccin-mocha.json'), 'utf8'),
+      readFileSync(join(BUNDLED, 'tokyonight-night.json'), 'utf8'),
     )
     // The user's customization survives next to it (item R).
     expect(readFileSync(`${dest}.bak`, 'utf8')).toBe('{ "hijacked": true }')
@@ -53,7 +52,7 @@ describe('syncTuiThemes', () => {
     const home = join(scratch, 'preserve-home')
     mkdirSync(home)
     syncTuiThemes(BUNDLED, home) // fresh home: everything in sync afterwards
-    const dest = join(home, 'themes', 'catppuccin-mocha.json')
+    const dest = join(home, 'themes', 'tokyonight-night.json')
     writeFileSync(dest, '{ "mine": true }')
     expect(syncTuiThemes(BUNDLED, home, { onConflict: 'preserve' })).toEqual([])
     expect(readFileSync(dest, 'utf8')).toBe('{ "mine": true }')
@@ -63,10 +62,10 @@ describe('syncTuiThemes', () => {
     const home = join(scratch, 'overwrite-home')
     mkdirSync(home)
     syncTuiThemes(BUNDLED, home) // fresh home: everything in sync afterwards
-    const dest = join(home, 'themes', 'catppuccin-mocha.json')
+    const dest = join(home, 'themes', 'tokyonight-night.json')
     writeFileSync(dest, '{ "nope": true }')
-    expect(syncTuiThemes(BUNDLED, home, { onConflict: 'overwrite' })).toEqual(['catppuccin-mocha.json'])
-    expect(readFileSync(dest, 'utf8')).toBe(readFileSync(join(BUNDLED, 'catppuccin-mocha.json'), 'utf8'))
+    expect(syncTuiThemes(BUNDLED, home, { onConflict: 'overwrite' })).toEqual(['tokyonight-night.json'])
+    expect(readFileSync(dest, 'utf8')).toBe(readFileSync(join(BUNDLED, 'tokyonight-night.json'), 'utf8'))
     expect(() => readFileSync(`${dest}.bak`)).toThrow() // no backup under overwrite
   })
 
@@ -74,15 +73,15 @@ describe('syncTuiThemes', () => {
     const home = join(scratch, 'dryrun-home')
     mkdirSync(home)
     syncTuiThemes(BUNDLED, home) // fresh home: everything in sync afterwards
-    const dest = join(home, 'themes', 'catppuccin-mocha.json')
+    const dest = join(home, 'themes', 'tokyonight-night.json')
     writeFileSync(dest, '{ "custom": true }')
     const planned = syncTuiThemes(BUNDLED, home, { dryRun: true })
-    expect(planned).toEqual(['catppuccin-mocha.json'])
+    expect(planned).toEqual(['tokyonight-night.json'])
     expect(readFileSync(dest, 'utf8')).toBe('{ "custom": true }') // untouched
     expect(() => readFileSync(`${dest}.bak`)).toThrow() // no backup taken
   })
 
-  it('never touches files outside the catppuccin-*.json namespace', () => {
+  it('never touches files outside the tokyonight-*.json namespace', () => {
     const home = join(scratch, 'user-themes')
     mkdirSync(join(home, 'themes'), { recursive: true })
     const userTheme = join(home, 'themes', 'my-custom.json')
@@ -93,18 +92,17 @@ describe('syncTuiThemes', () => {
 
   it('synces community themes write-if-missing and never overwrites (item T)', () => {
     const home = join(scratch, 'community-home')
-    const communityDir = join(home, 'themes', 'catppuccin-community')
+    const communityDir = join(home, 'themes', 'tokyonight-community')
     mkdirSync(communityDir, { recursive: true })
     writeFileSync(join(communityDir, 'comrade.json'), '{ "name": "comrade" }')
     writeFileSync(join(communityDir, 'occupied.json'), '{ "name": "community-copy" }')
     // An existing theme with the same name must win over the community copy.
     writeFileSync(join(home, 'themes', 'occupied.json'), '{ "name": "user-copy" }')
     expect(syncTuiThemes(BUNDLED, home, { communityDir }).sort()).toEqual([
-      'catppuccin-frappe.json',
-      'catppuccin-latte.json',
-      'catppuccin-macchiato.json',
-      'catppuccin-mocha.json',
       'comrade.json',
+      'tokyonight-light.json',
+      'tokyonight-night.json',
+      'tokyonight-storm.json',
     ])
     expect(readFileSync(join(home, 'themes', 'occupied.json'), 'utf8')).toBe('{ "name": "user-copy" }')
     // Second run: everything is in sync, community included.
@@ -114,11 +112,10 @@ describe('syncTuiThemes', () => {
   it('no-ops when the community dir is absent', () => {
     const home = join(scratch, 'no-community-home')
     mkdirSync(home)
-    expect(syncTuiThemes(BUNDLED, home, { communityDir: join(home, 'themes', 'catppuccin-community') })).toEqual([
-      'catppuccin-frappe.json',
-      'catppuccin-latte.json',
-      'catppuccin-macchiato.json',
-      'catppuccin-mocha.json',
+    expect(syncTuiThemes(BUNDLED, home, { communityDir: join(home, 'themes', 'tokyonight-community') })).toEqual([
+      'tokyonight-light.json',
+      'tokyonight-night.json',
+      'tokyonight-storm.json',
     ])
   })
 })

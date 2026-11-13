@@ -136,6 +136,7 @@ async function passOnboarding(page) {
   // ~/.cache/ms-playwright 而不是 %LOCALAPPDATA%）就退到**系统 Chrome**（本机测量资产
   // 一节的老办法，省掉一次浏览器下载），再找不到才交给 playwright 自己的默认路径。
   const chromiumExe = (() => {
+    if (process.env.CHROME_BIN) return process.env.CHROME_BIN
     const cache = path.join(process.env.LOCALAPPDATA || os.homedir(), 'ms-playwright')
     if (fs.existsSync(cache)) {
       for (const dir of fs.readdirSync(cache)) {
@@ -207,35 +208,41 @@ async function passOnboarding(page) {
       }
       await page.waitForTimeout(1500)
       // issue #27: the preference rows are no longer spliced into General — the plugin
-      // owns a `settings.section` with its own nav entry (label `nav.title` = "Catppuccin").
+      // owns a `settings.section` with its own nav entry (label `nav.title` = "TokyoNight").
       // Settings opens on the first official section, so ours must be selected first.
-      // Everything after this is scoped to the page container (`data-catppuccin-settings`)
+      // Everything after this is scoped to the page container (`data-tokyonight-settings`)
       // instead of `document.body`: the same rows ALSO render on the plugin's own detail
       // page (`plugins.bundle.config`), and a page-wide text match would happily pass
       // against that copy even if the settings page itself were broken.
-      await page.getByRole('button', { name: 'Catppuccin', exact: true }).last().click({ timeout: 20000 })
-      const root = page.locator('[data-catppuccin-settings]')
+      await page.getByRole('button', { name: 'Tokyo Night', exact: true }).last().click({ timeout: 20000 })
+      const root = page.locator('[data-tokyonight-settings]')
       await root.waitFor({ timeout: 15000 })
       return root
     }
     const pageRoot = await openSettingsPanel()
-    check('「Catppuccin」设置分区出现在导航里并可打开（issue #27）', await pageRoot.isVisible())
-    const row = pageRoot.locator('[data-catppuccin-row="flavor"]')
+    check('「TokyoNight」设置分区出现在导航里并可打开（issue #27）', await pageRoot.isVisible())
+    const row = pageRoot.locator('[data-tokyonight-row="flavor"]')
     await row.waitFor({ timeout: 15000 })
 
     // ---- 行为断言：三块（风味 / 玻璃 / 更新）真的注册上了 ------------------
     const rowsText = await pageRoot.innerText()
-    check('「Catppuccin 主题」行已注册', rowsText.includes('Catppuccin 主题'))
+    check('「Tokyo Night 主题」行已注册', rowsText.includes('Tokyo Night 主题'))
     check('「玻璃质感」行已注册', rowsText.includes('玻璃质感'))
-    check('「检查 Catppuccin 插件更新」行已注册', rowsText.includes('检查 Catppuccin 插件更新'))
+    check('更新检查和高亮风格控件已移除', !rowsText.includes('检查 Tokyo Night 插件更新') && !rowsText.includes('代码高亮风格'))
 
     // ---- 关键区域采样 1：风味真的落到 token 上 ---------------------------
     const baseOf = () =>
       page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--dsw-alias-bg-base').trim())
-    await row.getByRole('button', { name: 'Mocha' }).click()
+    await row.getByRole('button', { name: 'Night' }).click()
     await page.waitForTimeout(2500)
     const mochaBase = await baseOf()
-    check('切 Mocha 后 --dsw-alias-bg-base 生效', mochaBase.toLowerCase() === '#11111b', `实际 ${mochaBase}`)
+    check('切 Night 后 --dsw-alias-bg-base 生效', mochaBase.toLowerCase() === '#1a1b26', `实际 ${mochaBase}`)
+
+    for (const [label, expected] of [['Light', '#e6e7ed'], ['Storm', '#24283b'], ['Night', '#1a1b26']]) {
+      await row.getByRole('button', { name: label }).click()
+      await page.waitForFunction(bg => getComputedStyle(document.body).getPropertyValue('--dsw-alias-bg-base').trim().toLowerCase() === bg, expected)
+      check(`${label} 切换后背景匹配 TokyoNightPalette.md`, (await baseOf()).toLowerCase() === expected)
+    }
 
     // 0.2.0 把菜单材质拆成了 `--dsw-menu-surface-fill`，`--dsw-specific-menu` 只是对它的
     // var() 引用。用探针 span 让**浏览器**去解析这条链（不需要真有菜单打开）：解析不出来

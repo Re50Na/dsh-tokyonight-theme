@@ -16,17 +16,17 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import {
-  CATPPUCCIN_SETTINGS_NS,
-  CATPPUCCIN_ENTRY_ID,
+  TOKYONIGHT_SETTINGS_NS,
+  TOKYONIGHT_ENTRY_ID,
   defaultSettingsSection,
   hasUserLayerSection,
 } from '../src/state.ts'
 import {
-  CATPPUCCIN_SETTINGS_BASE,
-  CatppuccinSettingsSchema,
+  TOKYONIGHT_SETTINGS_BASE,
+  TokyoNightSettingsSchema,
   Config,
   maybeVolatile,
-} from '../src/settings-catppuccin.ts'
+} from '../src/settings-tokyonight.ts'
 import { createDurableScope, durableStateFromSnapshot, isScopeUsable } from '../src/client/state-sync.ts'
 
 const repoFile = (relative: string): string =>
@@ -146,7 +146,7 @@ describe('Config vs the legacy namespace schema', () => {
   })
 
   it('the legacy namespace schema stays plain — no entry form appears there', () => {
-    const { volatile } = leaves(CatppuccinSettingsSchema.toJSON() as unknown as SchemaJson)
+    const { volatile } = leaves(TokyoNightSettingsSchema.toJSON() as unknown as SchemaJson)
     expect(volatile).toEqual([])
   })
 
@@ -170,7 +170,7 @@ describe('Config vs the legacy namespace schema', () => {
     }
     const expected = defaultSettingsSection()
     expect(plain(resolved)).toEqual(expected)
-    expect(CATPPUCCIN_SETTINGS_BASE).toEqual(expected)
+    expect(TOKYONIGHT_SETTINGS_BASE).toEqual(expected)
   })
 })
 
@@ -181,12 +181,12 @@ describe('Config vs the legacy namespace schema', () => {
 describe('profile entry id contract', () => {
   it('matches the insert row that carries the plugin', () => {
     const patch = repoFile('cordis.patch.yml')
-    const row = /-\s+id:\s*(\S+)\s*\n\s+name:\s*'@nonamelego\/dsh-catppuccin'/.exec(patch)
-    expect(row?.[1]).toBe(CATPPUCCIN_ENTRY_ID)
+    const row = /-\s+id:\s*(\S+)\s*\n\s+name:\s*'dsh-tokyonight-theme'/.exec(patch)
+    expect(row?.[1]).toBe(TOKYONIGHT_ENTRY_ID)
   })
 
   it('keeps the legacy namespace distinct from the entry id', () => {
-    expect(CATPPUCCIN_SETTINGS_NS).not.toBe(CATPPUCCIN_ENTRY_ID)
+    expect(TOKYONIGHT_SETTINGS_NS).not.toBe(TOKYONIGHT_ENTRY_ID)
   })
 })
 
@@ -250,7 +250,7 @@ describe('createDurableScope', () => {
     expect(isScopeUsable(scope.getSnapshot())).toBe(true)
     // An empty override object is what the Host produces before any write.
     expect(scope.hasUserLayer(fakeSnapshot({}))).toBe(false)
-    expect(scope.hasUserLayer(fakeSnapshot({ flavor: 'catppuccin-mocha' }))).toBe(true)
+    expect(scope.hasUserLayer(fakeSnapshot({ flavor: 'tokyonight-night' }))).toBe(true)
     expect(await scope.write([{ op: 'set', path: ['flavor'], value: 'off' }], 7)).toBe('accepted')
     // The fence is forwarded on THIS seam only.
     expect(mutate).toHaveBeenCalledWith([{ op: 'set', path: ['flavor'], value: 'off' }], 7)

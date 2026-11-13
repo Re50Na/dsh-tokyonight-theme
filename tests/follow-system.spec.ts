@@ -27,8 +27,8 @@ import {
   readFollowDark,
   readFollowSystem,
 } from '../src/client/index.ts'
-import { CATPPUCCIN_FLAVORS } from '../src/client/palettes.ts'
-import type { CatppuccinRowInjected } from '../src/client/CatppuccinRow.tsx'
+import { TOKYONIGHT_FLAVORS } from '../src/client/palettes.ts'
+import type { TokyoNightRowInjected } from '../src/client/TokyoNightRow.tsx'
 
 interface Snapshot { preference: string; revision: number }
 
@@ -154,21 +154,21 @@ function mount(options: { withOverrides?: boolean } = {}) {
   apply(ctx)
   const page = registered.find((entry) => entry.name === 'settings.section')
   if (page === undefined) throw new Error('settings section was not registered')
-  const face = (page.options.inject as () => { flavor: CatppuccinRowInjected })()
+  const face = (page.options.inject as () => { flavor: TokyoNightRowInjected })()
   return { ctx, theme, face: face.flavor }
 }
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20))
 
 const tokenValue = (flavorId: string, name: string): string | undefined =>
-  CATPPUCCIN_FLAVORS.find((flavor) => flavor.themeId === flavorId)?.tokens[name]
+  TOKYONIGHT_FLAVORS.find((flavor) => flavor.themeId === flavorId)?.tokens[name]
 
 describe('issue #36: follow the OS scheme', () => {
   beforeEach(() => localStorage.clear())
   afterEach(() => localStorage.clear())
 
   it('stacks a two-half layer and keeps the preference on system', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme } = mount()
     await settle()
@@ -176,15 +176,15 @@ describe('issue #36: follow the OS scheme', () => {
     expect(theme.getTheme().preference).toBe('system')
     expect(theme.layers).toHaveLength(1)
     const layer = theme.layers[0]
-    // The light half is Latte, the dark half the persisted follow flavour — not
+    // The light half is Light, the dark half the persisted follow flavour — not
     // the same palette, or the feature would be a no-op.
-    expect(layer.tokens['--dsw-alias-bg-base'].light).toBe(tokenValue('catppuccin-latte', '--dsw-alias-bg-base'))
-    expect(layer.tokens['--dsw-alias-bg-base'].dark).toBe(tokenValue('catppuccin-mocha', '--dsw-alias-bg-base'))
+    expect(layer.tokens['--dsw-alias-bg-base'].light).toBe(tokenValue('tokyonight-light', '--dsw-alias-bg-base'))
+    expect(layer.tokens['--dsw-alias-bg-base'].dark).toBe(tokenValue('tokyonight-night', '--dsw-alias-bg-base'))
     expect(layer.tokens['--dsw-alias-bg-base'].light).not.toBe(layer.tokens['--dsw-alias-bg-base'].dark)
   })
 
   it('every layer entry is a { light, dark } pair (a bare string throws upstream)', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme } = mount()
     await settle()
@@ -197,7 +197,7 @@ describe('issue #36: follow the OS scheme', () => {
 
   it('does not clobber the built-in preference "off" has to restore', async () => {
     localStorage.setItem(RESTORE_STORAGE_KEY, 'dark')
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     mount()
     await settle()
@@ -208,7 +208,7 @@ describe('issue #36: follow the OS scheme', () => {
   })
 
   it('turning follow off retires the layer and restores the fixed flavour', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme, face } = mount()
     await settle()
@@ -218,35 +218,35 @@ describe('issue #36: follow the OS scheme', () => {
 
     expect(readFollowSystem()).toBe(false)
     expect(theme.layers).toHaveLength(0)
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
   })
 
   it('picking a flavour ends follow mode (an explicit pick wins)', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme, face } = mount()
     await settle()
 
-    face.select('catppuccin-frappe')
+    face.select('tokyonight-storm')
     await settle()
 
     expect(readFollowSystem()).toBe(false)
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-frappe')
-    expect(theme.getTheme().preference).toBe('catppuccin-frappe')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-storm')
+    expect(theme.getTheme().preference).toBe('tokyonight-storm')
     expect(theme.layers).toHaveLength(0)
   })
 
   it('leaves follow mode off alone: the shipped behaviour is unchanged', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     const { theme } = mount()
     await settle()
 
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
     expect(theme.layers).toHaveLength(0)
   })
 
   it('a settings-document adopt cannot drag the runtime off system', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme } = mount()
     await settle()
@@ -263,7 +263,7 @@ describe('issue #36: follow the OS scheme', () => {
   })
 
   it('an explicit Appearance pick still wins for the session', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme } = mount()
     await settle()
@@ -279,10 +279,10 @@ describe('issue #36: follow the OS scheme', () => {
   })
 
   it('reflects a follow-key change from another window', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     const { theme } = mount()
     await settle()
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
 
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     window.dispatchEvent(new StorageEvent('storage', { key: FOLLOW_SYSTEM_KEY }))
@@ -293,28 +293,28 @@ describe('issue #36: follow the OS scheme', () => {
   })
 
   it('rebuilds the layer when the other window changes the dark half', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme } = mount()
     await settle()
-    expect(theme.layers[0].tokens['--dsw-alias-bg-base'].dark).toBe(tokenValue('catppuccin-mocha', '--dsw-alias-bg-base'))
+    expect(theme.layers[0].tokens['--dsw-alias-bg-base'].dark).toBe(tokenValue('tokyonight-night', '--dsw-alias-bg-base'))
 
-    localStorage.setItem(FOLLOW_DARK_KEY, 'catppuccin-frappe')
+    localStorage.setItem(FOLLOW_DARK_KEY, 'tokyonight-storm')
     window.dispatchEvent(new StorageEvent('storage', { key: FOLLOW_DARK_KEY }))
     await settle()
 
-    expect(theme.layers[0].tokens['--dsw-alias-bg-base'].dark).toBe(tokenValue('catppuccin-frappe', '--dsw-alias-bg-base'))
+    expect(theme.layers[0].tokens['--dsw-alias-bg-base'].dark).toBe(tokenValue('tokyonight-storm', '--dsw-alias-bg-base'))
   })
 
   it('degrades to the fixed flavour on a host without overrideTokens', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     localStorage.setItem(FOLLOW_SYSTEM_KEY, 'true')
     const { theme, face } = mount({ withOverrides: false })
     await settle()
 
     // No layer, no `system` switch — but the flavour still applies, so the user
-    // sees Catppuccin rather than an unthemed UI.
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
+    // sees TokyoNight rather than an unthemed UI.
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
     expect(face.followAvailable).toBe(false)
   })
 })
@@ -331,10 +331,10 @@ describe('issue #36: follow-mode storage readers', () => {
   })
 
   it('only accepts the three DARK flavours as the dark half', () => {
-    expect(readFollowDark()).toBe('catppuccin-mocha')
-    localStorage.setItem(FOLLOW_DARK_KEY, 'catppuccin-latte')
-    expect(readFollowDark()).toBe('catppuccin-mocha')
-    localStorage.setItem(FOLLOW_DARK_KEY, 'catppuccin-frappe')
-    expect(readFollowDark()).toBe('catppuccin-frappe')
+    expect(readFollowDark()).toBe('tokyonight-night')
+    localStorage.setItem(FOLLOW_DARK_KEY, 'tokyonight-light')
+    expect(readFollowDark()).toBe('tokyonight-night')
+    localStorage.setItem(FOLLOW_DARK_KEY, 'tokyonight-storm')
+    expect(readFollowDark()).toBe('tokyonight-storm')
   })
 })

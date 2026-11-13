@@ -36,13 +36,13 @@ import {
   readUpdateChannel,
   writeLocalSection,
 } from '../src/client/index.ts'
-import { defaultSettingsSection, type CatppuccinSettingsSection, type GlassState } from '../src/state.ts'
+import { defaultSettingsSection, type TokyoNightSettingsSection, type GlassState } from '../src/state.ts'
 
 /** Durable section with every field moved away from its shipped default. */
-const NON_DEFAULT_SECTION: CatppuccinSettingsSection = {
-  flavor: 'catppuccin-frappe',
+const NON_DEFAULT_SECTION: TokyoNightSettingsSection = {
+  flavor: 'tokyonight-storm',
   followSystem: true,
-  followDark: 'catppuccin-macchiato',
+  followDark: 'tokyonight-storm',
   glass: {
     enabled: true,
     mode: 'compat',
@@ -191,11 +191,11 @@ describe('writeLocalSection — every field of the section is cached (issue #38)
       applyRemote: (state) => { appliedGlass.push(state) },
     })
 
-    expect(readFlavor()).toBe('catppuccin-frappe')
+    expect(readFlavor()).toBe('tokyonight-storm')
     // The pair #38 was about: a missing writer leaves the shipped default and
     // the next publish re-pushes it.
     expect(readFollowSystem()).toBe(true)
-    expect(readFollowDark()).toBe('catppuccin-macchiato')
+    expect(readFollowDark()).toBe('tokyonight-storm')
     expect(readAutoCheck()).toBe(false)
     expect(readUpdateChannel()).toBe('beta')
     expect(readOverrides()).toEqual({ '--dsw-static-blue-500': '#cba6f7' })
@@ -217,7 +217,7 @@ describe('writeLocalSection — every field of the section is cached (issue #38)
         followSystemWhenGlassRan = localStorage.getItem(FOLLOW_SYSTEM_KEY)
       },
     })
-    expect(followDarkWhenGlassRan).toBe('catppuccin-macchiato')
+    expect(followDarkWhenGlassRan).toBe('tokyonight-storm')
     expect(followSystemWhenGlassRan).toBe('true')
   })
 })
@@ -227,16 +227,16 @@ describe('adoption of a settings document (issue #38)', () => {
   afterEach(() => localStorage.clear())
 
   it('caches the document follow pair instead of pushing the local one back', async () => {
-    // Origin A chose frappé as the dark half; origin B already committed mocha.
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-frappe')
-    localStorage.setItem(FOLLOW_DARK_KEY, 'catppuccin-frappe')
+    // Origin A chose frappé as the dark half; origin B already committed night.
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-storm')
+    localStorage.setItem(FOLLOW_DARK_KEY, 'tokyonight-storm')
     const document = {
       ...defaultSettingsSection(),
-      flavor: 'catppuccin-frappe' as const,
-      followDark: 'catppuccin-mocha' as const,
+      flavor: 'tokyonight-storm' as const,
+      followDark: 'tokyonight-night' as const,
     }
     const forms = makeConfigForms({
-      user: { flavor: 'catppuccin-frappe' },
+      user: { flavor: 'tokyonight-storm' },
       value: document,
       revision: 5,
     })
@@ -245,22 +245,22 @@ describe('adoption of a settings document (issue #38)', () => {
     await settle()
 
     // The document wins…
-    expect(readFollowDark()).toBe('catppuccin-mocha')
+    expect(readFollowDark()).toBe('tokyonight-night')
     // …and the adoption must not queue a write that carries the stale value
     // (that write is one turn of the reported ping-pong).
     expect(forms.mutations).toHaveLength(0)
   })
 
   it('still adopts a LATER external edit (issue #31 guard must not stay armed)', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-frappe')
-    localStorage.setItem(FOLLOW_DARK_KEY, 'catppuccin-frappe')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-storm')
+    localStorage.setItem(FOLLOW_DARK_KEY, 'tokyonight-storm')
     const document = {
       ...defaultSettingsSection(),
-      flavor: 'catppuccin-frappe' as const,
-      followDark: 'catppuccin-mocha' as const,
+      flavor: 'tokyonight-storm' as const,
+      followDark: 'tokyonight-night' as const,
     }
     const forms = makeConfigForms({
-      user: { flavor: 'catppuccin-frappe' },
+      user: { flavor: 'tokyonight-storm' },
       value: document,
       revision: 5,
     })
@@ -269,14 +269,14 @@ describe('adoption of a settings document (issue #38)', () => {
     await settle()
 
     // A second window commits a new dark half.
-    forms.push({ ...document, followDark: 'catppuccin-macchiato' }, 6)
+    forms.push({ ...document, followDark: 'tokyonight-storm' }, 6)
     await settleShort()
 
     // Regression guard for the WRITE ORDER: appending the follow writes after
     // `glass.applyRemote` also stops the loop, but arms `pendingLocalSection`
     // with a section no flush settles, so this adoption is skipped and the
-    // cache stays on mocha (verified against that variant before the fix).
-    expect(readFollowDark()).toBe('catppuccin-macchiato')
+    // cache stays on night (verified against that variant before the fix).
+    expect(readFollowDark()).toBe('tokyonight-storm')
     expect(forms.mutations).toHaveLength(0)
   })
 })

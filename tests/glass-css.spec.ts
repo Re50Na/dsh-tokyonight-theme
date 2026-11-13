@@ -402,7 +402,7 @@ describe('ground ambience (issue #25, revised by #26)', () => {
   // The ground used to be a single flat colour, so every glass pane read as
   // "the same colour as the page": the card fill is layer-1 @ α over bg-base —
   // ΔRGB ≤ 2/255 on the dark flavours at the default frost and EXACTLY 0 on
-  // Latte (layer-1 === bg-base). Issue #25 added an ambient field the
+  // Light (layer-1 === bg-base). Issue #25 added an ambient field the
   // translucent fills can TRANSMIT; reverting to a flat fill must fail loudly.
   // Evidence and the reasoning: docs/issue-25-ambient-ground.md.
   //
@@ -545,8 +545,8 @@ describe('ground ambience (issue #25, revised by #26)', () => {
     )
   })
 
-  it('defines the wash for both schemes (the Latte ladder collapses)', () => {
-    // On Latte `layer-1 === bg-base`, so a wash tinted by a layer token is a
+  it('defines the wash for both schemes (the Light ladder collapses)', () => {
+    // On Light `layer-1 === bg-base`, so a wash tinted by a layer token is a
     // no-op there — the light end must tint white; the dark flavours tint
     // bg-layer-1 instead. Dropping either arm re-flattens one scheme.
     const light = rules.find(
@@ -580,7 +580,7 @@ describe('menu seat + un-stroked highlights (issue #22)', () => {
   //    with the last model's capsule flush against its bottom edge (the
   //    reporter's 「双层边框 + 贴底」).
   //  - The sidebar's right edge was the only edge with an accent override
-  //    ("luminous right edge"); in Latte it read as a half-drawn box whose
+  //    ("luminous right edge"); in Light it read as a half-drawn box whose
   //    corners hooked around the rounded arcs.
   //  - The two 1px inset rings (selected conversation row, hovered menu cell)
   //    were the last strokes in the highlight vocabulary; the reporter asked
@@ -614,7 +614,7 @@ describe('menu seat + un-stroked highlights (issue #22)', () => {
         `${rule.selector} paints a fill on the surface`,
       ).toBe(false)
       // Round 3 ②a removed the stroke because it read as a solid frame in
-      // LATTE; that verdict still holds for the light schemes. The 2026-10-19
+      // LIGHT; that verdict still holds for the light schemes. The 2026-10-19
       // frame-language audit ⑦ put the SOFT step back for DARK schemes only
       // (a popup over a dense transcript needs an edge to read), so the only
       // stroke this guard tolerates is that one, in the soft weight.
@@ -651,7 +651,7 @@ describe('menu seat + un-stroked highlights (issue #22)', () => {
     expect(sidebar.length).toBeGreaterThan(0)
     expect(
       sidebar.filter((rule) => /border-right-color/.test(rule.decls)).map((rule) => rule.selector),
-      'issue #22 c1: the accent right edge read as a half-drawn frame in Latte',
+      'issue #22 c1: the accent right edge read as a half-drawn frame in Light',
     ).toEqual([])
     // 2026-10-16 (issue #26 follow-up ②): the sidebar rides the SOFT step now
     // (see the rim block above); it is still one uniform rim on all four sides —
@@ -832,7 +832,7 @@ describe('main input surface rim (issue #22 follow-up)', () => {
   // slab was removed 2026-10-13) sits FLAT on the solid page ground with a
   // fill all but identical to it, so the generic 18% rim measured as an
   // invisible boundary there (rim ≈ rgb(210,212,220) on the
-  // rgb(239,241,245) Latte ground, ΔRGB ≤ 31 at 1x — reporter's config,
+  // rgb(239,241,245) Light ground, ΔRGB ≤ 31 at 1x — reporter's config,
   // 2026-10-11 CDP evidence). It rides the dedicated `--dsh-glass-rim-strong`
   // step; every other rim consumer keeps the base token, whose 18% is right
   // wherever a drop shadow or a layer step does part of the separating.
@@ -911,7 +911,7 @@ describe('backdrop-root hygiene: the trigger-palette host stays filter-free (iss
   //    (the first value is byte-identical to the same crop with the palette's own
   //    blur removed — an identity read);
   //  - full-page A/B with the shipped sheet, reporter settings (mica, blur 2,
-  //    frost 20, Latte): palette band 31.58 (before) → 0.00 (after), while the
+  //    frost 20, Light): palette band 31.58 (before) → 0.00 (after), while the
   //    bare-transcript control stayed 76.32 and removing the palette's own blur
   //    put it back to 32.06.
   const HOSTS = ['[data-composer-card]', '[data-dsh-glass-inputbar]']
@@ -1164,7 +1164,7 @@ describe('the top-bar card selector stays off the page head (issue #21)', () => 
   // A bare `header` tag selector matched both. On the page head the 12px outer
   // margin + 10px padding + rim turned an invisible layout box into a card and
   // pulled the toolbar 11px from the card's top edge against 29px from its
-  // bottom one (live GUI, mocha + mica, 1440x900@2x: card y 12..84, toolbar
+  // bottom one (live GUI, night + mica, 1440x900@2x: card y 12..84, toolbar
   // y 23..55 — the reporter's issue #21). It also handed the page head the
   // collapsed-rail `margin-left: 28px` and discarded the Windows/macOS
   // `--dsh-frame-top-clearance`. `[data-phase]` is the seam: scoping to it
@@ -1274,7 +1274,7 @@ describe("third-party surfaces: dsh-better-display's reasoning card (2026-10-16)
   // The 「思考」 panel belongs to the third-party `dsh-better-display` bundle
   // (`ReasoningCard`, hooks `data-reader-reasoning-card` / `-heading` /
   // `-scroll` / `-text`). Its stock material is the only OPAQUE plate in the
-  // transcript — `background: var(--dsw-alias-bg-module-platform)` (Mocha
+  // transcript — `background: var(--dsw-alias-bg-module-platform)` (Night
   // #313244, measured rgb(49,50,68) on the live page) + a white-12% hairline
   // (`--dsw-alias-border-l2`) + a 12px radius — while every surface our skin
   // owns is translucent glass with the themed rim. The seat therefore changes
@@ -1326,8 +1326,8 @@ describe('official artifact rows: the deliverables block (2026-10-16)', () => {
   // 「已编辑 N 个文件」+ the presented-file cards come from the OFFICIAL
   // `@deepseek-ai/dsh-client-ui-deliverables` bundle (0.2.0-rc.2). Its stock
   // material is an opaque three-step stack — card body
-  // `--dsw-alias-bg-layer-1` (Mocha #181825), header / file-card fills
-  // `--dsw-static-neutral-850` (Mocha #1e1e2e, Latte #e6e9ef), rows painting
+  // `--dsw-alias-bg-layer-1` (Night #181825), header / file-card fills
+  // `--dsw-static-neutral-850` (Night #1e1e2e, Light #e6e9ef), rows painting
   // nothing — while the mica sidebar is ONE 52% `--dsh-glass-card` sheet.
   // The seat re-anchors the plugin's OWN fill variables onto that exact sheet
   // (rule 4: alpha / rim / radius only, no invented hue) and flattens the inner
@@ -1625,7 +1625,7 @@ describe('official transcript surface: the turn-trigger notice (2026-10-16)', ()
   // hook, and its stock material is a NEUTRAL plate: the official table defines
   // `--dsw-alias-turn-trigger-bg` as `--dsw-alias-interactive-bg-hover` on the
   // dark flavours, i.e. `rgba(255,255,255,.08)` / `.14` hovered, over a `.5px`
-  // `border-l1` hairline at the 20px `--dsw-radius-xl`. Measured on the Mocha
+  // `border-l1` hairline at the 20px `--dsw-radius-xl`. Measured on the Night
   // ground (#11111b): #24242d at rest, #32323b hovered — the reporter's
   // screenshot reads exactly #32323b.
   const seat = rules.filter((rule) => rule.selector.includes('[data-turn-trigger]'))
@@ -1925,7 +1925,7 @@ describe('native seats are never glass-filled (issue #39)', () => {
   // host's TOOLTIP (`_bubble_44yfq_1`), because a tooltip attached to a
   // transcript button renders inline instead of portalling to <body>. The rule
   // replaced `--dsw-alias-tooltip-bg` with a light glass tint while the label
-  // stayed `--dsw-static-neutral-bluish-00` → 1.0:1 on Latte (white on white).
+  // stayed `--dsw-static-neutral-bluish-00` → 1.0:1 on Light (white on white).
   // The #17 block above could not catch it: its assertion greps for the
   // LITERAL `[role='tooltip']`, so a substring selector walks straight past.
   //

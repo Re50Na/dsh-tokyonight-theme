@@ -15,12 +15,12 @@ import { de, en, es, fr, ja, ko, zh } from '../src/client/locales.ts'
 const LANGUAGES = { en, ja, ko, es, fr, de } as const
 
 /** Keys built as templates at their render site, so a literal search cannot see
- *  them (`CatppuccinRow.tsx` does the `flavor.${id}.subtitle` splice). */
+ *  them (`TokyoNightRow.tsx` does the `flavor.${id}.subtitle` splice). */
 const TEMPLATE_KEYS = new Set([
-  'flavor.latte.subtitle',
-  'flavor.frappe.subtitle',
-  'flavor.macchiato.subtitle',
-  'flavor.mocha.subtitle',
+  'flavor.light.subtitle',
+  'flavor.storm.subtitle',
+  'flavor.storm.subtitle',
+  'flavor.night.subtitle',
 ])
 
 const SOURCE_ROOT = fileURLToPath(new URL('../src', import.meta.url))
@@ -58,16 +58,9 @@ describe('locale dictionaries (item CC)', () => {
   it('the new copy keys exist everywhere (help / subtitles / prefs / conflict)', () => {    const key = (k: keyof typeof zh): boolean => k in zh
     expect(key('row.help')).toBe(true)
     expect(key('glass.help')).toBe(true)
-    expect(key('update.help')).toBe(true)
-    expect(key('flavor.mocha.subtitle')).toBe(true)
-    expect(key('update.autoCheck')).toBe(true)
-    expect(key('update.channelBeta')).toBe(true)
-    expect(key('update.conflict')).toBe(true)
-    expect(key('update.err.networkLocal')).toBe(true)
-    expect(key('update.err.networkUpstream')).toBe(true)
+    expect(key('flavor.night.subtitle')).toBe(true)
     for (const [id, dict] of Object.entries(LANGUAGES)) {
-      expect(dict['flavor.mocha.subtitle']).not.toBe('')
-      expect(dict['update.err.networkLocal']).not.toBe(undefined)
+      expect(dict['flavor.night.subtitle']).not.toBe('')
     }
   })
 

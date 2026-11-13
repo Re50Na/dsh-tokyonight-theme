@@ -1,7 +1,7 @@
 /**
  * Client half of the pre-paint palette (issue #30 补充, 2026-10-27).
  *
- * The Host injects a `<style data-dsh-catppuccin-boot>` into the index HTML so
+ * The Host injects a `<style data-dsh-tokyonight-boot>` into the index HTML so
  * the first frame is already the persisted flavour (see `src/boot-palette.ts`).
  * That sheet is only a stand-in: its selector is `html body` (0,0,2), which
  * outranks the official `body` token block, so leaving it in place would pin

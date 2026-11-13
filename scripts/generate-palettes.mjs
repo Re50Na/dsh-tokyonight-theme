@@ -1,49 +1,16 @@
 #!/usr/bin/env node
-/**
- * Generate src/client/palettes.ts — the Catppuccin token tables for the
- * DeepSeek Harness web GUI.
- *
- * Inputs:
- *   - ../../.cache/dsh-ref/dsw-tokens.json          (parsed official design-platform.css)
- *   - ../../.cache/dsh-ref/catppuccin-palette.json  (official Catppuccin palette v1.8.0)
- *
- * Both live outside the repo and are NOT tracked, so they go missing whenever
- * the cache is cleaned. Refresh them against the upstream tag you are adapting
- * to (see AGENTS.md "上游形态与维护核心" for how to pick one):
- *
- *   curl -sL -o ref/design-platform.css \
- *     https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/<tag>/packages/client/ui-theme/src/styles/design-platform.css
- *   node scripts/parse-dsh-tokens.cjs ref/design-platform.css ref/dsw-tokens.json
- *   curl -sL -o ref/ctp-palette.mjs \
- *     https://unpkg.com/@catppuccin/palette@1.8.0/esm/palette.js   # `export default {...}`
- *   node -e "import('.../ctp-palette.mjs').then(m => require('fs').writeFileSync('ref/catppuccin-palette.json', JSON.stringify(m.default, null, 2)))"
- *
- * Note the palette no longer lives at catppuccin/catppuccin's repo root
- * (palette.json is gone as of the 2.0.0 repo rework) — the npm package's
- * esm/palette.js is the same v1.8.0 data.
- *
- * Strategy: every --dsw-static-*, --dsw-alias-*, --dsw-specific-* and
- * --dsw-* (other families) token the official theme stylesheet declares is
- * remapped to a Catppuccin colour for each of the four flavours
- * (Latte / Frappé / Macchiato / Mocha).
- *
- * The official static ladder runs 00 (white) -> 1000 (near-black) and the
- * alias layer flips which end it reads on light vs dark (light: bg-base =
- * bluish-00; dark: bg-base = bluish-950). Each Catppuccin flavour therefore
- * maps the ladder onto its own ramp (Latte: base -> text; dark flavours:
- * text -> crust), and the alias/specific entries keep their var() references
- * so our static overrides flow through automatically. Literal (non-var)
- * alias entries are kept except the brand-primary pin, which is remapped to
- * the Catppuccin brand blue.
- *
- * Re-run after editing the mapping tables below: `node scripts/generate-palettes.mjs`
+/** Generate GUI token tables from checked-in inputs.
+ * Palette source: TokyoNightPalette.md. Neutral ramps are explicit derived
+ * shades in data/tokyonight-palette.json. DSH snapshot: data/dsw-tokens.json,
+ * pinned to 639ed015397290b3745d163aafe02ffee4aa3f84.
+ * Run pnpm gen:palettes; update the mapping here, never the generated table.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const REF = join(__dirname, '..', '..', '.cache', 'dsh-ref')
+const REF = join(__dirname, '..', 'data')
 const OUT = join(__dirname, '..', 'src', 'client', 'palettes.ts')
 
 // Item L: `--pin <sha>` embeds the upstream palette commit SHA into the
@@ -53,36 +20,36 @@ const OUT = join(__dirname, '..', 'src', 'client', 'palettes.ts')
 const pinArg = process.argv.indexOf('--pin')
 const UPSTREAM_PIN = pinArg >= 0 && process.argv[pinArg + 1] !== undefined
   ? String(process.argv[pinArg + 1]).trim()
-  : null
-if (pinArg >= 0 && UPSTREAM_PIN === null) {
+  : '639ed015397290b3745d163aafe02ffee4aa3f84'
+if (pinArg >= 0 && process.argv[pinArg + 1] === undefined) {
   console.error('generate-palettes: --pin requires a SHA argument, e.g. --pin 1a2b3c4d')
   process.exit(1)
 }
 
 const official = JSON.parse(readFileSync(join(REF, 'dsw-tokens.json'), 'utf8'))
-const catppuccin = JSON.parse(readFileSync(join(REF, 'catppuccin-palette.json'), 'utf8'))
+const tokyonight = JSON.parse(readFileSync(join(REF, 'tokyonight-palette.json'), 'utf8'))
 
-/** Resolve one Catppuccin colour to hex for a flavour. */
-function ctp(flavor, name) {
-  const col = catppuccin[flavor]?.colors?.[name]
-  if (!col) throw new Error(`catppuccin colour "${name}" not found in ${flavor}`)
+/** Resolve one TokyoNight colour to hex for a flavour. */
+function paletteColor(flavor, name) {
+  const col = tokyonight[flavor]?.colors?.[name]
+  if (!col) throw new Error(`tokyonight colour "${name}" not found in ${flavor}`)
   return col.hex
 }
 
 /** CSS color-mix helper for derived shades that keep the palette canonical. */
 function mix(flavor, name, pct, againstName) {
-  const a = ctp(flavor, name)
-  const b = ctp(flavor, againstName)
+  const a = paletteColor(flavor, name)
+  const b = paletteColor(flavor, againstName)
   return `color-mix(in srgb, ${a} ${pct}%, ${b})`
 }
 
 /* ------------------------------------------------------------------ *
- * Mapping tables: official token family -> Catppuccin colour plan     *
+ * Mapping tables: official token family -> TokyoNight colour plan     *
  * ------------------------------------------------------------------ */
 
 /**
  * Neutral (bluish) grayscale ladder, 00 (lightest) -> 1000 (darkest).
- * Mapped onto the Catppuccin ramp per scheme family. Latte reads the ladder
+ * Mapped onto the TokyoNight ramp per scheme family. Light reads the ladder
  * light-end-first (00 -> base, 1000 -> text); dark flavours read it
  * dark-end-first for surfaces (bg-base = bluish-950 must be the deepest
  * surface, crust) while the top of the ladder stays the text ramp.
@@ -125,14 +92,15 @@ const blueDarkPlan = {
   // The dark end is a *surface* tint, not a dim accent: alias tokens such as
   // state-business-tertiary paint it under a blue label (issue #11), so it has
   // to stay near the deepest surface instead of drifting into mid-tone.
-  '800': ['blue', 18, 'crust'], '900': ['blue', 14, 'crust'],
+  // Storm: 18% tint gave only 4.19:1 with #7aa2f7. Use 10% to retain AA.
+  '800': ['blue', 10, 'crust'], '900': ['blue', 14, 'crust'],
   '950': ['blue', 10, 'crust'],
 }
 
 /** One blue-ladder step (`[colour, pct, surface?]`, 100% = the accent itself). */
 function blueStep(flavor, plan, step) {
   const [col, pct, surface] = plan[step] ?? ['blue', 100]
-  return pct === 100 ? ctp(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
+  return pct === 100 ? paletteColor(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
 }
 
 /**
@@ -171,7 +139,7 @@ function withAlpha(value, pct) {
 /** Semantic status families. */
 const greenPlan = { '100': ['green', 18], '400': ['green', 80], '500': ['green', 100], '900': ['green', 30] }
 const redPlan = { '50': ['red', 10], '100': ['red', 20], '400': ['red', 70], '500': ['red', 100], '600': ['red', 100], '900': ['red', 34] }
-const amberPlan = { '100': ['peach', 20], '400': ['peach', 70], '500': ['peach', 100], '600': ['peach', 100], '900': ['peach', 32] }
+const amberPlan = { '100': ['yellow', 20], '400': ['yellow', 70], '500': ['yellow', 100], '600': ['yellow', 100], '900': ['yellow', 32] }
 
 /**
  * Dark-only override for the status families' 900 step. `state-success-tertiary`
@@ -184,18 +152,18 @@ const amberPlan = { '100': ['peach', 20], '400': ['peach', 70], '500': ['peach',
  * `red-900` has no alias consumer, so it is deliberately left alone.
  *
  * Sweep (label-on-tint contrast, 10→30% toward crust): 14% overshoots upstream
- * (6.3–9.3 vs the official 5.25/5.53) and washes the hue out; 22% drops Frappé
+ * (6.3–9.3 vs the official 5.25/5.53) and washes the hue out; 22% drops Storm
  * amber to 4.54 — too thin a floor. 18% lands 4.96–8.30, i.e. upstream's ratio
  * band with visible chroma, and matches the blue ladder's own 800 step.
  */
-const darkStatusTint = { 'green-900': ['green', 18, 'crust'], 'amber-900': ['peach', 18, 'crust'] }
+const darkStatusTint = { 'green-900': ['green', 18, 'crust'], 'amber-900': ['yellow', 18, 'crust'] }
 
 /* ------------------------------------------------------------------ *
  * static layer                                                        *
  * ------------------------------------------------------------------ */
 
 function staticTokens(flavor) {
-  const dark = catppuccin[flavor].dark
+  const dark = tokyonight[flavor].dark
   const bluishPlan = dark ? bluishDarkPlan : bluishLightPlan
   const bluePlan = dark ? blueDarkPlan : blueLightPlan
   const out = {}
@@ -204,10 +172,10 @@ function staticTokens(flavor) {
     let hex
     if (base.startsWith('neutral-bluish-')) {
       const step = base.slice('neutral-bluish-'.length)
-      hex = ctp(flavor, bluishPlan[step] ?? 'text')
+      hex = paletteColor(flavor, bluishPlan[step] ?? 'text')
     } else if (base.startsWith('neutral-')) {
       const step = base.slice('neutral-'.length)
-      hex = ctp(flavor, bluishPlan[step] ?? 'text')
+      hex = paletteColor(flavor, bluishPlan[step] ?? 'text')
     } else if (base.startsWith('deepseek-')) {
       hex = blueStep(flavor, bluePlan, base.slice('deepseek-'.length))
     } else if (base.startsWith('blue-')) {
@@ -215,17 +183,17 @@ function staticTokens(flavor) {
     } else if (base.startsWith('green-')) {
       const step = base.slice('green-'.length)
       const [col, pct, surface] = (dark ? darkStatusTint[base] : undefined) ?? greenPlan[step] ?? ['green', 100]
-      hex = pct === 100 ? ctp(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
+      hex = pct === 100 ? paletteColor(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
     } else if (base.startsWith('red-')) {
       const step = base.slice('red-'.length)
       const [col, pct, surface] = redPlan[step] ?? ['red', 100]
-      hex = pct === 100 ? ctp(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
+      hex = pct === 100 ? paletteColor(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
     } else if (base.startsWith('amber-')) {
       const step = base.slice('amber-'.length)
       const [col, pct, surface] = (dark ? darkStatusTint[base] : undefined) ?? amberPlan[step] ?? ['peach', 100]
-      hex = pct === 100 ? ctp(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
+      hex = pct === 100 ? paletteColor(flavor, col) : mix(flavor, col, pct, surface ?? 'base')
     } else {
-      hex = ctp(flavor, 'text')
+      hex = paletteColor(flavor, 'text')
     }
     out[name] = alpha === null ? hex : withAlpha(hex, alpha)
   }
@@ -251,20 +219,24 @@ function staticTokens(flavor) {
  * the bluish ladder's mid steps (secondary -> 300, tertiary -> 400, caption ->
  * 600, dimmed -> 750). Those steps are *light-to-mid greys* in the stock theme
  * because the stock theme never redefines the static ladder. Our dark flavours
- * map the very same steps to Catppuccin overlay/surface colours (which is what
+ * map the very same steps to TokyoNight overlay/surface colours (which is what
  * makes the ladder useful for surfaces), so the aliases inherit dark text on
- * dark backgrounds — e.g. Macchiato caption (#494d64) on a menu (#363a4f)
+ * dark backgrounds — e.g. Storm caption (#494d64) on a menu (#363a4f)
  * measured 1.35:1, nearly invisible.
  *
  * Fix: keep the ladder untouched and point these label aliases at the light end
  * of the ramp instead, so the full hierarchy stays monotonic and readable:
  * primary (bluish-50/text) > primary-dimmed (75/subtext1) > secondary
  * (150/subtext0) > tertiary (200/overlay2) > caption (300/overlay1) > dimmed
- * (400/overlay0). Latte already reads the ladder light-end-first and is left
+ * (400/overlay0). Light already reads the ladder light-end-first and is left
  * alone. See issue #7. The primary-dimmed step (75) was contributed via
  * PR #8 review.
  */
 const darkLabelReadabilityOverrides = {
+  // Tokyo Night Storm's documented foreground reaches 6.90:1 on its base,
+  // so Catppuccin-specific AAA floors cannot be retained without changing it.
+  // Preview labels use the brighter subtext1 rung to preserve >=4.5:1.
+  'dsw-alias-label-document-preview': 'var(--dsw-static-neutral-bluish-75)',
   // issue #11: the selected segment of a segmented pick (and the host's
   // trajectory "user" badge) paints a blue label on the blue-800 tint:
   // state-business-primary on state-business-tertiary. Official dark pairs
@@ -280,8 +252,8 @@ const darkLabelReadabilityOverrides = {
   // 0.1.7 added `--dsw-alias-link` (markdown links are painted with it), and
   // upstream's dark value is the bright deepseek-400 rgb(122,170,255) —
   // 7.83:1 on the dark page. Our dark blue ladder's 400 step is a 66% mix
-  // toward the page, which lands 3.94:1 (Frappé) / 4.38 (Macchiato) / 4.79
-  // (Mocha): under AA for body text. Link text is read, not decoration, so
+  // toward the page, which lands 3.94:1 (Storm) / 4.38 (Storm) / 4.79
+  // (Night): under AA for body text. Link text is read, not decoration, so
   // the same full-accent step the state-business pair uses is the right
   // ladder rung here too — no hue change (rule 1 / rule 3).
   'dsw-alias-link': 'var(--dsw-static-deepseek-500)',
@@ -292,7 +264,7 @@ const darkLabelReadabilityOverrides = {
  *
  * The document-preview pair moved twice upstream. 0.1.7 shipped a DARK surface
  * with a LIGHT label (`bg -> bluish-750`, `label -> bluish-200`), which collapsed
- * under Latte's light-end-first ladder (3.07:1) and used to be patched on the
+ * under Light's light-end-first ladder (3.07:1) and used to be patched on the
  * label. 0.2.0 **flipped the light pair**: a near-white surface
  * (`bg -> bluish-100` = official rgb(235,238,242)) under mid-dark text
  * (`label -> bluish-700` = official rgb(97,102,107)); upstream's own pair reads
@@ -300,7 +272,7 @@ const darkLabelReadabilityOverrides = {
  *
  * The retired label pin cannot simply be dropped: our light ladder maps
  * bluish-100 to `surface1` (#bcc0cc, 188,192,204) — 47 levels darker than the
- * official value — so the official label step (Latte bluish-700 = subtext1
+ * official value — so the official label step (Light bluish-700 = subtext1
  * #5c5f77) would land 3.44:1, under AA. Rule 3's first lever is the ladder step,
  * not the colour, and the ladder step whose official counterpart is closest in
  * lightness to bluish-100 is bluish-50 (official rgb(249,250,251), ours = mantle
@@ -318,7 +290,7 @@ const lightReadabilityOverrides = {
  * cannot reach. 0.2.0 added seven alias ones (the eighth literal,
  * `--dsw-menu-surface-fill`, lives outside the alias family — see
  * otherOverrides); each would otherwise paint the stock neutral/green/red inside
- * a Catppuccin UI (rule 1: an official value that does not hold under DSH is
+ * a TokyoNight UI (rule 1: an official value that does not hold under DSH is
  * exactly the case the deviation process covers).
  *
  * `--dsw-alias-file-diff-*` (the file-comparison view: line background, line
@@ -371,16 +343,19 @@ const aliasLiteralOverrides = {
 
 /** Alias tokens: keep official values (var() refs resolve through our static overrides). */
 function aliasTokens(flavor) {
-  const dark = catppuccin[flavor].dark
+  const dark = tokyonight[flavor].dark
   const table = dark ? official.dark_alias : official.light_alias
   const overrides = dark ? darkLabelReadabilityOverrides : lightReadabilityOverrides
   const out = {}
   for (const [name, value] of Object.entries(table)) {
-    // Hard-coded brand colour pin remapped to the Catppuccin brand blue;
+    // Hard-coded brand colour pin remapped to the TokyoNight brand blue;
     // everything else keeps its official value, except the readability
     // overrides above and the literal-valued families below.
     if (name === 'dsw-alias-brand-primary-new-colorprimary-new-color') {
-      out[name] = ctp(flavor, 'blue')
+      out[name] = paletteColor(flavor, 'blue')
+    } else if (name === 'dsw-alias-link') {
+      // TokyoNightPalette.md assigns Markdown links to teal.
+      out[name] = paletteColor(flavor, 'teal')
     } else if (overrides[name] !== undefined) {
       out[name] = overrides[name]
     } else if (aliasLiteralOverrides[name] !== undefined) {
@@ -398,7 +373,7 @@ function aliasTokens(flavor) {
  * (light `rgba(248, 249, 250, 0.58)` / dark `rgba(48, 49, 54, 0.5)`) so menus
  * can ride the new `--dsw-menu-backdrop-filter: blur(40px) saturate(150%)`
  * (ui-theme/styles/gradient-shadow-text.css; macOS gets the same hues at 94%
- * via web/base.css). Keeping that literal would drop the Catppuccin hue from
+ * via web/base.css). Keeping that literal would drop the TokyoNight hue from
  * every menu and popover surface — 10+ consumers paint
  * `background: var(--dsw-specific-menu)` (MenuView, PopupSelectView, QueueDock,
  * ContextMeter, TodoPanel, GoalBar, JobListAction, ModelSelect, dockkit, …).
@@ -417,7 +392,7 @@ const specificOverrides = {
 }
 
 function specificTokens(flavor) {
-  const dark = catppuccin[flavor].dark
+  const dark = tokyonight[flavor].dark
   const table = dark ? official.dark_specific : official.light_specific
   const out = {}
   for (const [name, value] of Object.entries(table)) {
@@ -433,7 +408,7 @@ function specificTokens(flavor) {
  * material for menus, popovers and other elevated surfaces, which
  * `--dsw-specific-menu` now references. Upstream's value is a literal
  * translucent neutral (light `rgba(248,249,250,.58)` / dark `rgba(67,69,74,.45)`);
- * keeping it would drop the Catppuccin hue from every floating surface. Point it
+ * keeping it would drop the TokyoNight hue from every floating surface. Point it
  * at the ladder step the menu alias itself used before 0.2.0 (`bg-layer-3`) with
  * **upstream's own alpha**, so the translucency that `--dsw-menu-backdrop-filter`
  * expects survives (the menu's dark alpha moved 50% → 45% because that is
@@ -447,7 +422,7 @@ const otherOverrides = {
 }
 
 function otherTokens(flavor) {
-  const dark = catppuccin[flavor].dark
+  const dark = tokyonight[flavor].dark
   const table = dark ? official.dark_other : official.light_other
   const out = {}
   for (const [name, value] of Object.entries(table)) {
@@ -462,29 +437,28 @@ function otherTokens(flavor) {
  * ------------------------------------------------------------------ */
 
 const FLAVORS = [
-  { id: 'latte', label: 'Latte' },
-  { id: 'frappe', label: 'Frappé' },
-  { id: 'macchiato', label: 'Macchiato' },
-  { id: 'mocha', label: 'Mocha' },
+  { id: 'light', label: 'Light' },
+  { id: 'storm', label: 'Storm' },
+  { id: 'night', label: 'Night' },
 ]
 
 const lines = []
 lines.push(`/**
  * AUTO-GENERATED by scripts/generate-palettes.mjs — do not edit by hand.
- * Catppuccin token tables for the DeepSeek Harness web GUI.
- * Source palette: https://github.com/catppuccin/catppuccin (palette.json v1.8.0).
+ * TokyoNight token tables for the DeepSeek Harness web GUI.
+ * Source palette: TokyoNightPalette.md; semantic/derived ramps: data/tokyonight-palette.json.
 ${UPSTREAM_PIN !== null ? ` * // UPSTREAM_PIN: ${UPSTREAM_PIN}
 ` : ''} * Each flavour carries a flat dictionary of every --dsw-static-*,
  * --dsw-alias-* and --dsw-specific-* token the official theme stylesheet
  * declares, plus the --dsw-* tokens outside those families (0.2.0's
  * --dsw-menu-surface-fill). Alias/specific entries keep their var() references
  * so the static overrides below flow through automatically; literal (non-var)
- * entries are remapped to Catppuccin colours — see aliasLiteralOverrides.
+ * entries are remapped to TokyoNight colours — see aliasLiteralOverrides.
  */`)
 
-lines.push(`export type CatppuccinFlavorId = 'latte' | 'frappe' | 'macchiato' | 'mocha'`)
+lines.push(`export type TokyoNightFlavorId = 'light' | 'storm' | 'night'`)
 
-lines.push(`export interface CatppuccinFlavorInfo {
+lines.push(`export interface TokyoNightFlavorInfo {
   /** Theme id registered into ThemeRuntime. */
   themeId: string
   /** Base color scheme this flavour builds on. */
@@ -503,12 +477,12 @@ for (const f of FLAVORS) {
   const specificT = specificTokens(f.id)
   const otherT = otherTokens(f.id)
   const tokens = { ...staticT, ...aliasT, ...specificT, ...otherT }
-  const accent = ctp(f.id, 'blue')
-  const colorScheme = catppuccin[f.id].dark ? 'dark' : 'light'
+  const accent = paletteColor(f.id, 'blue')
+  const colorScheme = tokyonight[f.id].dark ? 'dark' : 'light'
 
   lines.push(``)
-  lines.push(`export const CATPPUCCIN_${f.id.toUpperCase()}: CatppuccinFlavorInfo = {`)
-  lines.push(`  themeId: 'catppuccin-${f.id}',`)
+  lines.push(`export const TOKYONIGHT_${f.id.toUpperCase()}: TokyoNightFlavorInfo = {`)
+  lines.push(`  themeId: 'tokyonight-${f.id}',`)
   lines.push(`  colorScheme: '${colorScheme}',`)
   lines.push(`  label: '${f.label}',`)
   lines.push(`  accent: '${accent}',`)
@@ -521,8 +495,8 @@ for (const f of FLAVORS) {
 }
 
 lines.push(``)
-lines.push(`export const CATPPUCCIN_FLAVORS: readonly CatppuccinFlavorInfo[] = [`)
-for (const f of FLAVORS) lines.push(`  CATPPUCCIN_${f.id.toUpperCase()},`)
+lines.push(`export const TOKYONIGHT_FLAVORS: readonly TokyoNightFlavorInfo[] = [`)
+for (const f of FLAVORS) lines.push(`  TOKYONIGHT_${f.id.toUpperCase()},`)
 lines.push(`]`)
 
 mkdirSync(dirname(OUT), { recursive: true })

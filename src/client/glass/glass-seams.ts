@@ -1,5 +1,5 @@
 /**
- * Runtime seam stamper for the Catppuccin glass layer.
+ * Runtime seam stamper for the TokyoNight glass layer.
  *
  * The glass stylesheet keys off stable data-* hooks (`data-dsh-glass-frame`,
  * `data-dsh-glass-trajectory`, `data-dsh-glass-stats`, …) that are NOT part

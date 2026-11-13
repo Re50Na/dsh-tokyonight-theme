@@ -16,17 +16,17 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { migrateLegacyStateOnce, scheduleLegacyMigration, type SettingsLike } from '../src/migrate-legacy.ts'
-import { CATPPUCCIN_ENTRY_ID, defaultState, hasUserLayerSection, settingsSectionFromState } from '../src/state.ts'
+import { TOKYONIGHT_ENTRY_ID, defaultState, hasUserLayerSection, settingsSectionFromState } from '../src/state.ts'
 
-const ENTRY = CATPPUCCIN_ENTRY_ID
+const ENTRY = TOKYONIGHT_ENTRY_ID
 /** The event brands its namespace argument; our constant is the same string. */
-const ENTRY_NS = CATPPUCCIN_ENTRY_ID as unknown as SettingsNamespace
-const nonDefault = { ...defaultState(), flavor: 'catppuccin-mocha' as const }
+const ENTRY_NS = TOKYONIGHT_ENTRY_ID as unknown as SettingsNamespace
+const nonDefault = { ...defaultState(), flavor: 'tokyonight-night' as const }
 
 /** Point `readLegacyState()` at a temp DSH home holding the legacy file. */
 function withLegacyHome(): { home: string; dispose: () => void } {
-  const home = mkdtempSync(join(tmpdir(), 'dsh-catppuccin-migrate-'))
-  writeFileSync(join(home, 'catppuccin-state.json'), JSON.stringify(nonDefault))
+  const home = mkdtempSync(join(tmpdir(), 'dsh-tokyonight-migrate-'))
+  writeFileSync(join(home, 'tokyonight-state.json'), JSON.stringify(nonDefault))
   const previous = process.env.DSH_HOME
   process.env.DSH_HOME = home
   return {
@@ -58,7 +58,7 @@ function settingsDouble(options: { descriptors?: boolean, initialUser?: unknown,
       // is what let a second attempt read a pre-write revision in the field.
       if (latency > 0) await new Promise((resolve) => setTimeout(resolve, latency))
       if (expectedRevision !== undefined && expectedRevision !== revision) {
-        throw new Error(`settings namespace "dsh-catppuccin" changed since it was read (expected revision ${expectedRevision}, now ${revision})`)
+        throw new Error(`settings namespace "dsh-tokyonight" changed since it was read (expected revision ${expectedRevision}, now ${revision})`)
       }
       updates.push({ ns, patch, revision: expectedRevision })
       revision += 1
@@ -87,7 +87,7 @@ describe('migrateLegacyStateOnce', () => {
   it('reports pending while the entry is not addressable, and absent with no file', async () => {
     const { settings } = settingsDouble({ descriptors: false })
     expect(await migrateLegacyStateOnce(settings, ENTRY, hasUserLayerSection, { fence: true })).toBe('pending')
-    rmSync(join(legacy.home, 'catppuccin-state.json'))
+    rmSync(join(legacy.home, 'tokyonight-state.json'))
     const live = settingsDouble()
     expect(await migrateLegacyStateOnce(live.settings, ENTRY, hasUserLayerSection, { fence: true })).toBe('absent')
   })

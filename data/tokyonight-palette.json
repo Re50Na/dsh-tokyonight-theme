@@ -1,0 +1,296 @@
+{
+  "light": {
+    "dark": false,
+    "colors": {
+      "red": {
+        "hex": "#8c4351"
+      },
+      "peach": {
+        "hex": "#965027"
+      },
+      "yellow": {
+        "hex": "#8f5e15"
+      },
+      "green": {
+        "hex": "#385f0d"
+      },
+      "teal": {
+        "hex": "#33635c"
+      },
+      "sky": {
+        "hex": "#0f4b6e"
+      },
+      "sapphire": {
+        "hex": "#006c86"
+      },
+      "blue": {
+        "hex": "#2959aa"
+      },
+      "mauve": {
+        "hex": "#5a3e8e"
+      },
+      "text": {
+        "hex": "#343b58"
+      },
+      "maroon": {
+        "hex": "#8c4351"
+      },
+      "pink": {
+        "hex": "#8c4351"
+      },
+      "flamingo": {
+        "hex": "#8c4351"
+      },
+      "rosewater": {
+        "hex": "#965027"
+      },
+      "lavender": {
+        "hex": "#5a3e8e"
+      },
+      "base": {
+        "hex": "#e6e7ed"
+      },
+      "mantle": {
+        "hex": "#e1e2e9"
+      },
+      "crust": {
+        "hex": "#dbdde4"
+      },
+      "surface0": {
+        "hex": "#d8d9e1"
+      },
+      "surface1": {
+        "hex": "#cbcdd7"
+      },
+      "surface2": {
+        "hex": "#bdbfcb"
+      },
+      "overlay0": {
+        "hex": "#696f85"
+      },
+      "overlay1": {
+        "hex": "#5d637a"
+      },
+      "overlay2": {
+        "hex": "#6c6e75"
+      },
+      "subtext0": {
+        "hex": "#464c67"
+      },
+      "subtext1": {
+        "hex": "#40434f"
+      },
+      "comment": {
+        "hex": "#6c6e75"
+      },
+      "syntaxText": {
+        "hex": "#343b58"
+      },
+      "parameter": {
+        "hex": "#8f5e15"
+      },
+      "markdown": {
+        "hex": "#40434f"
+      },
+      "background": {
+        "hex": "#e6e7ed"
+      }
+    }
+  },
+  "storm": {
+    "dark": true,
+    "colors": {
+      "red": {
+        "hex": "#f7768e"
+      },
+      "peach": {
+        "hex": "#ff9e64"
+      },
+      "yellow": {
+        "hex": "#e0af68"
+      },
+      "green": {
+        "hex": "#9ece6a"
+      },
+      "teal": {
+        "hex": "#73daca"
+      },
+      "sky": {
+        "hex": "#7dcfff"
+      },
+      "sapphire": {
+        "hex": "#2ac3de"
+      },
+      "blue": {
+        "hex": "#7aa2f7"
+      },
+      "mauve": {
+        "hex": "#bb9af7"
+      },
+      "text": {
+        "hex": "#a9b1d6"
+      },
+      "maroon": {
+        "hex": "#f7768e"
+      },
+      "pink": {
+        "hex": "#f7768e"
+      },
+      "flamingo": {
+        "hex": "#f7768e"
+      },
+      "rosewater": {
+        "hex": "#ff9e64"
+      },
+      "lavender": {
+        "hex": "#bb9af7"
+      },
+      "crust": {
+        "hex": "#24283b"
+      },
+      "mantle": {
+        "hex": "#272b40"
+      },
+      "base": {
+        "hex": "#2a2e44"
+      },
+      "surface0": {
+        "hex": "#323852"
+      },
+      "surface1": {
+        "hex": "#3a405d"
+      },
+      "surface2": {
+        "hex": "#414868"
+      },
+      "overlay0": {
+        "hex": "#6d7390"
+      },
+      "overlay1": {
+        "hex": "#7a81a0"
+      },
+      "overlay2": {
+        "hex": "#888faf"
+      },
+      "subtext0": {
+        "hex": "#959cbf"
+      },
+      "subtext1": {
+        "hex": "#9aa5ce"
+      },
+      "comment": {
+        "hex": "#565f89"
+      },
+      "syntaxText": {
+        "hex": "#c0caf5"
+      },
+      "parameter": {
+        "hex": "#e0af68"
+      },
+      "markdown": {
+        "hex": "#9aa5ce"
+      },
+      "background": {
+        "hex": "#24283b"
+      }
+    }
+  },
+  "night": {
+    "dark": true,
+    "colors": {
+      "red": {
+        "hex": "#f7768e"
+      },
+      "peach": {
+        "hex": "#ff9e64"
+      },
+      "yellow": {
+        "hex": "#e0af68"
+      },
+      "green": {
+        "hex": "#9ece6a"
+      },
+      "teal": {
+        "hex": "#73daca"
+      },
+      "sky": {
+        "hex": "#7dcfff"
+      },
+      "sapphire": {
+        "hex": "#2ac3de"
+      },
+      "blue": {
+        "hex": "#7aa2f7"
+      },
+      "mauve": {
+        "hex": "#bb9af7"
+      },
+      "text": {
+        "hex": "#a9b1d6"
+      },
+      "maroon": {
+        "hex": "#f7768e"
+      },
+      "pink": {
+        "hex": "#f7768e"
+      },
+      "flamingo": {
+        "hex": "#f7768e"
+      },
+      "rosewater": {
+        "hex": "#ff9e64"
+      },
+      "lavender": {
+        "hex": "#bb9af7"
+      },
+      "crust": {
+        "hex": "#1a1b26"
+      },
+      "mantle": {
+        "hex": "#1e202d"
+      },
+      "base": {
+        "hex": "#222433"
+      },
+      "surface0": {
+        "hex": "#2e3247"
+      },
+      "surface1": {
+        "hex": "#373d58"
+      },
+      "surface2": {
+        "hex": "#414868"
+      },
+      "overlay0": {
+        "hex": "#696e87"
+      },
+      "overlay1": {
+        "hex": "#777c98"
+      },
+      "overlay2": {
+        "hex": "#858caa"
+      },
+      "subtext0": {
+        "hex": "#949abc"
+      },
+      "subtext1": {
+        "hex": "#9aa5ce"
+      },
+      "comment": {
+        "hex": "#565f89"
+      },
+      "syntaxText": {
+        "hex": "#c0caf5"
+      },
+      "parameter": {
+        "hex": "#e0af68"
+      },
+      "markdown": {
+        "hex": "#9aa5ce"
+      },
+      "background": {
+        "hex": "#1a1b26"
+      }
+    }
+  }
+}

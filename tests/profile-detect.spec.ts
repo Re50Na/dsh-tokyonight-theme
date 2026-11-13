@@ -19,7 +19,7 @@ import {
   isRegistrySpec,
   profileHint,
 } from '../src/profile-detect.ts'
-import { PACKAGE_NAME } from '../src/update-check.ts'
+import { PACKAGE_NAME } from '../src/identity.ts'
 
 describe('profileHint', () => {
   it('accepts a leading bare profile name', () => {
@@ -148,34 +148,34 @@ describe('isRegistrySpec', () => {
   })
 
   it('rejects link:, file:, workspace: and git/URL specs', () => {
-    expect(isRegistrySpec('link:D:\\Vibe-Coding\\dsh-catppuccin')).toBe(false)
-    expect(isRegistrySpec('file:../dsh-catppuccin')).toBe(false)
+    expect(isRegistrySpec('link:D:\\Vibe-Coding\\dsh-tokyonight')).toBe(false)
+    expect(isRegistrySpec('file:../dsh-tokyonight')).toBe(false)
     expect(isRegistrySpec('workspace:*')).toBe(false)
-    expect(isRegistrySpec('git+https://github.com/NoNameLeGo/dsh-catppuccin-theme.git')).toBe(false)
-    expect(isRegistrySpec('https://registry.npmjs.org/@nonamelego/dsh-catppuccin')).toBe(false)
-    expect(isRegistrySpec('github:NoNameLeGo/dsh-catppuccin-theme')).toBe(false)
+    expect(isRegistrySpec('git+https://github.com/Re50Na/dsh-tokyonight-theme.git')).toBe(false)
+    expect(isRegistrySpec('https://registry.npmjs.org/dsh-tokyonight-theme')).toBe(false)
+    expect(isRegistrySpec('github:Re50Na/dsh-tokyonight-theme')).toBe(false)
   })
 
   it('rejects bare paths and empty specs', () => {
-    expect(isRegistrySpec('C:\\code\\dsh-catppuccin')).toBe(false)
-    expect(isRegistrySpec('./dsh-catppuccin')).toBe(false)
+    expect(isRegistrySpec('C:\\code\\dsh-tokyonight')).toBe(false)
+    expect(isRegistrySpec('./dsh-tokyonight')).toBe(false)
     expect(isRegistrySpec('')).toBe(false)
   })
 })
 
 describe('installSourceOf', () => {
   it('classifies non-registry specs into link/file/git', () => {
-    expect(installSourceOf('link:../dsh-catppuccin')).toBe('link')
+    expect(installSourceOf('link:../dsh-tokyonight')).toBe('link')
     expect(installSourceOf('workspace:*')).toBe('link')
-    expect(installSourceOf('file:../dsh-catppuccin')).toBe('file')
-    expect(installSourceOf('git+https://github.com/NoNameLeGo/dsh-catppuccin-theme.git')).toBe('git')
-    expect(installSourceOf('github:NoNameLeGo/dsh-catppuccin-theme')).toBe('git')
+    expect(installSourceOf('file:../dsh-tokyonight')).toBe('file')
+    expect(installSourceOf('git+https://github.com/Re50Na/dsh-tokyonight-theme.git')).toBe('git')
+    expect(installSourceOf('github:Re50Na/dsh-tokyonight-theme')).toBe('git')
   })
 })
 
 describe('detectProfile', () => {
   async function fixtureDshHome(deps: Record<string, string>): Promise<string> {
-    const home = await mkdtemp(join(tmpdir(), 'dsh-catppuccin-probe-'))
+    const home = await mkdtemp(join(tmpdir(), 'dsh-tokyonight-probe-'))
     await mkdir(join(home, 'profiles', 'web'), { recursive: true })
     await mkdir(join(home, 'profiles', 'headless'), { recursive: true })
     await writeFile(join(home, 'profiles', 'web', 'package.json'), JSON.stringify({
@@ -194,7 +194,7 @@ describe('detectProfile', () => {
   })
 
   it('scans all profiles and finds the one listing the package', async () => {
-    const home = await fixtureDshHome({ [PACKAGE_NAME]: 'link:../dsh-catppuccin' })
+    const home = await fixtureDshHome({ [PACKAGE_NAME]: 'link:../dsh-tokyonight' })
     const probe = await detectProfile({ dshHome: home, argv: [] })
     expect(probe).toEqual({ name: 'web', detected: true, installSource: 'link' })
   })
@@ -213,9 +213,9 @@ describe('detectProfile', () => {
 
   it('lets the Desktop profile win over every probe and classify from its own dir', async () => {
     const home = await fixtureDshHome({ [PACKAGE_NAME]: '^0.2.5' })
-    const custom = await mkdtemp(join(tmpdir(), 'dsh-catppuccin-desktop-'))
+    const custom = await mkdtemp(join(tmpdir(), 'dsh-tokyonight-desktop-'))
     await writeFile(join(custom, 'package.json'), JSON.stringify({
-      dependencies: { [PACKAGE_NAME]: 'link:../dsh-catppuccin' },
+      dependencies: { [PACKAGE_NAME]: 'link:../dsh-tokyonight' },
     }))
     // argv says web, the home scan would find web — but Desktop is authoritative.
     const probe = await detectProfile({

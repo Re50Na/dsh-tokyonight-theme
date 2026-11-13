@@ -26,16 +26,15 @@
  *
  * Not a second implementation: the card renders the SAME four rows the
  * General section shows and is handed the same injected faces, so both homes
- * read and write the one durable section (`CATPPUCCIN_ENTRY_ID`). The only
+ * read and write the one durable section (`TOKYONIGHT_ENTRY_ID`). The only
  * cost of the second home is that the rows exist twice in the DOM when
  * both are open — each instance subscribes for itself, so no state is shared
  * behind the framework's back (the feedback row has no state at all).
  */
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { CatppuccinRow, type CatppuccinRowInjected } from './CatppuccinRow.tsx'
+import { TokyoNightRow, type TokyoNightRowInjected } from './TokyoNightRow.tsx'
 import { GlassRow, type GlassRowInjected } from './glass/glass-row.tsx'
 import { LinksRow } from './LinksRow.tsx'
-import { UpdateRow, type UpdateRowInjected } from './UpdateRow.tsx'
 import rowCss from './settings-row.module.css'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -43,8 +42,8 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     /**
      * One settings page on a BUNDLE's detail page in the Plugin manager,
      * keyed by the bundle's PACKAGE NAME (`{ entryKey: pkg.name }`) — for this
-     * plugin `@nonamelego/dsh-catppuccin`, NOT the profile entry id the
-     * namespace is keyed by (`CATPPUCCIN_ENTRY_ID`). The section renders only
+     * plugin `dsh-tokyonight-theme`, NOT the profile entry id the
+     * namespace is keyed by (`TOKYONIGHT_ENTRY_ID`). The section renders only
      * while an entry is registered; `slots.inject` waits for this declaration,
      * so a host without the Plugin manager simply never fires.
      *
@@ -63,18 +62,16 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 }
 
 /** Injected business face of the card: the three rows' own faces, unchanged. */
-export interface CatppuccinDetailCardInjected {
-  /** Catppuccin flavour row (registered themes + pick). */
-  flavor: CatppuccinRowInjected
+export interface TokyoNightDetailCardInjected {
+  /** TokyoNight flavour row (registered themes + pick). */
+  flavor: TokyoNightRowInjected
   /** Glass-layer row (enable flag + knobs). */
   glass: GlassRowInjected
-  /** Update-check row (version, channel, check button). */
-  update: UpdateRowInjected
 }
 
 /** Full component props: runtime share + locale seat + injected face. */
-export type CatppuccinDetailCardProps =
-  PropsRuntime<'plugins.bundle.config'> & PropsLocale<'catppuccin'> & CatppuccinDetailCardInjected
+export type TokyoNightDetailCardProps =
+  PropsRuntime<'plugins.bundle.config'> & PropsLocale<'tokyonight'> & TokyoNightDetailCardInjected
 
 /**
  * Render the four preference rows on the plugin's own detail page.
@@ -85,12 +82,11 @@ export type CatppuccinDetailCardProps =
  * @param props - the injected faces plus the framework seats.
  * @returns the stacked rows.
  */
-export function CatppuccinDetailCard(props: CatppuccinDetailCardProps): React.JSX.Element {
+export function TokyoNightDetailCard(props: TokyoNightDetailCardProps): React.JSX.Element {
   return (
-    <div className={rowCss.stack} data-catppuccin-detail-card>
-      <CatppuccinRow {...props.flavor} t={props.t} />
+    <div className={rowCss.stack} data-tokyonight-detail-card>
+      <TokyoNightRow {...props.flavor} t={props.t} />
       <GlassRow {...props.glass} t={props.t} />
-      <UpdateRow {...props.update} t={props.t} />
       <LinksRow t={props.t} />
     </div>
   )

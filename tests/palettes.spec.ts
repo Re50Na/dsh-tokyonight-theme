@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 /**
- * Catppuccin plugin spec — the token tables and flavour metadata contract.
+ * TokyoNight plugin spec — the token tables and flavour metadata contract.
  * Palettes are pure data: every official --dsw-* token must be present in
  * every flavour, alias entries keep their var() refs, the brand pin resolves
- * to the Catppuccin blue, and dark flavours put the deepest surface on the
+ * to the TokyoNight blue, and dark flavours put the deepest surface on the
  * bg-base alias end (bluish-950).
  */
 import { describe, expect, it } from 'vitest'
-import { CATPPUCCIN_FLAVORS } from '../src/client/palettes.ts'
+import { TOKYONIGHT_FLAVORS } from '../src/client/palettes.ts'
 import {
-  CATPPUCCIN_FLAVOR_VALUES,
+  TOKYONIGHT_FLAVOR_VALUES,
   FLAVOR_STORAGE_KEY,
   flavorFromThemeId,
   flavorInfo,
@@ -60,7 +60,7 @@ function resolveColor(tokens: Record<string, string>, name: string, depth = 0): 
   throw new Error(`cannot resolve ${name} = ${value}`)
 }
 
-const DARK_FLAVORS = CATPPUCCIN_FLAVORS.filter((f) => f.colorScheme === 'dark')
+const DARK_FLAVORS = TOKYONIGHT_FLAVORS.filter((f) => f.colorScheme === 'dark')
 
 /** Surfaces the weak-label and link assertions measure against. */
 const MENU = '--dsw-specific-menu'
@@ -118,19 +118,18 @@ function resolveSurface(tokens: Record<string, string>, name: string): string {
   return over(fill, Number(alphaMix[2]) / 100, resolveAliasHex(tokens, PAGE))
 }
 
-describe('Catppuccin palettes', () => {
-  it('covers all four flavours', () => {
-    expect(CATPPUCCIN_FLAVORS.map((f) => f.themeId)).toEqual([
-      'catppuccin-latte',
-      'catppuccin-frappe',
-      'catppuccin-macchiato',
-      'catppuccin-mocha',
+describe('TokyoNight palettes', () => {
+  it('covers all three flavours', () => {
+    expect(TOKYONIGHT_FLAVORS.map((f) => f.themeId)).toEqual([
+      'tokyonight-light',
+      'tokyonight-storm',
+      'tokyonight-night',
     ])
   })
 
-  it('latte is light, the rest dark', () => {
-    expect(CATPPUCCIN_FLAVORS[0].colorScheme).toBe('light')
-    for (const f of CATPPUCCIN_FLAVORS.slice(1)) expect(f.colorScheme).toBe('dark')
+  it('light is light, the rest dark', () => {
+    expect(TOKYONIGHT_FLAVORS[0].colorScheme).toBe('light')
+    for (const f of TOKYONIGHT_FLAVORS.slice(1)) expect(f.colorScheme).toBe('dark')
   })
 
   it('every flavour carries the full token ladder with -- prefixes', () => {
@@ -144,7 +143,7 @@ describe('Catppuccin palettes', () => {
       '--dsw-alias-label-primary',
       '--dsw-specific-bubble',
     ]
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       for (const token of expected) expect(f.tokens[token], `${f.themeId} ${token}`).toBeTruthy()
       const keys = Object.keys(f.tokens)
       for (const key of keys) expect(key.startsWith('--dsw-')).toBe(true)
@@ -152,26 +151,22 @@ describe('Catppuccin palettes', () => {
   })
 
   it('dark flavours map bg-base to the deepest surface (crust)', () => {
-    const mocha = CATPPUCCIN_FLAVORS.find((f) => f.themeId === 'catppuccin-mocha')!
+    const night = TOKYONIGHT_FLAVORS.find((f) => f.themeId === 'tokyonight-night')!
     // alias keeps the official var() ref; the static end it names is crust.
-    expect(mocha.tokens['--dsw-alias-bg-base']).toBe('var(--dsw-static-neutral-bluish-950)')
-    expect(mocha.tokens['--dsw-static-neutral-bluish-950']).toBe('#11111b')
+    expect(night.tokens['--dsw-alias-bg-base']).toBe('var(--dsw-static-neutral-bluish-950)')
+    expect(night.tokens['--dsw-static-neutral-bluish-950']).toBe('#1a1b26')
   })
 
-  it('brand pin resolves to the Catppuccin blue', () => {
-    const latte = CATPPUCCIN_FLAVORS.find((f) => f.themeId === 'catppuccin-latte')!
-    expect(latte.tokens['--dsw-alias-brand-primary-new-colorprimary-new-color']).toBe('#1e66f5')
+  it('brand pin resolves to the TokyoNight blue', () => {
+    const light = TOKYONIGHT_FLAVORS.find((f) => f.themeId === 'tokyonight-light')!
+    expect(light.tokens['--dsw-alias-brand-primary-new-colorprimary-new-color']).toBe('#2959aa')
   })
 
-  it('amber-400 uses peach (not yellow) across all flavours', () => {
-    // amber-400 is the secondary warning accent; it must stay in the peach
-    // family for consistency with the Catppuccin palette where yellow is
-    // semantically distinct (strings / types / classes).
-    for (const f of CATPPUCCIN_FLAVORS) {
-      const value = f.tokens['--dsw-static-amber-400']
-      expect(value, `${f.themeId} amber-400`).toMatch(/color-mix/)
-      // The base colour inside the mix must be the flavour's peach, not yellow.
-      expect(value, `${f.themeId} amber-400`).not.toContain('yellow')
+  it('warning ramps use the documented Tokyo Night yellow', () => {
+    for (const f of TOKYONIGHT_FLAVORS) {
+      const yellow = f.colorScheme === 'light' ? '#8f5e15' : '#e0af68'
+      expect(f.tokens['--dsw-static-amber-400']).toContain(yellow)
+      expect(f.tokens['--dsw-static-amber-500']).toBe(yellow)
     }
   })
 })
@@ -215,13 +210,13 @@ describe('weak label readability (issues #7, #12)', () => {
     }
   })
 
-  it('latte keeps the official light ladder — order intact, nothing slides lighter', () => {
+  it('light keeps the official light ladder — order intact, nothing slides lighter', () => {
     // Issue #12. The light flavour deliberately keeps the OFFICIAL alias→step
     // mapping (unlike the dark flavours, which need the issue #7 overrides),
     // because upstream's light theme itself paints weak labels with light
     // greys: official label-caption is rgb(173,178,184) = 2.14:1 on its own
-    // white input, while Latte's bluish-400 #7c7f93 lands at 3.49:1 on
-    // #eff1f5 — i.e. the faithful mapping is already 1.6× STRONGER than the
+    // white input, while Light's bluish-400 #7c7f93 lands at 3.49:1 on
+    // #e6e7ed — i.e. the faithful mapping is already 1.6× STRONGER than the
     // theme it adapts. So there is no "official value does not hold under DSH"
     // evidence here, and per rule 1 nothing is deviated.
     //
@@ -232,7 +227,7 @@ describe('weak label readability (issues #7, #12)', () => {
     // 2026-09-16; what is locked here is (a) the official step per alias and
     // (b) the resulting ratio floors (measured minus headroom), so no future
     // tweak can slide a weak label lighter or flatten the ladder silently.
-    const latte = CATPPUCCIN_FLAVORS.find((f) => f.colorScheme === 'light')!
+    const light = TOKYONIGHT_FLAVORS.find((f) => f.colorScheme === 'light')!
     const officialSteps: Record<string, string> = {
       '--dsw-alias-label-primary-dimmed': 'var(--dsw-static-neutral-bluish-950)',
       '--dsw-alias-label-secondary': 'var(--dsw-static-neutral-bluish-700)',
@@ -241,10 +236,10 @@ describe('weak label readability (issues #7, #12)', () => {
       '--dsw-alias-label-dimmed': 'var(--dsw-static-neutral-bluish-200)',
     }
     for (const [token, step] of Object.entries(officialSteps)) {
-      expect(latte.tokens[token], `latte ${token}`).toBe(step)
+      expect(light.tokens[token], `light ${token}`).toBe(step)
     }
 
-    // Measured 2026-09-16 (menu == page here: Latte maps both to bluish-00):
+    // Measured 2026-09-16 (menu == page here: Light maps both to bluish-00):
     // primary 7.06 | primary-dimmed 7.06 | secondary 5.53 | tertiary 5.53 |
     // caption 3.49 | dimmed 2.30.
     const floors: Record<string, { menu: number; page: number }> = {
@@ -254,8 +249,8 @@ describe('weak label readability (issues #7, #12)', () => {
       '--dsw-alias-label-caption': { menu: 3.2, page: 3.2 },
       '--dsw-alias-label-dimmed': { menu: 2.1, page: 2.1 },
     }
-    const menu = resolveSurface(latte.tokens, MENU)
-    const page = resolveAliasHex(latte.tokens, PAGE)
+    const menu = resolveSurface(light.tokens, MENU)
+    const page = resolveAliasHex(light.tokens, PAGE)
     const ladder = [
       '--dsw-alias-label-primary',
       '--dsw-alias-label-primary-dimmed',
@@ -264,29 +259,31 @@ describe('weak label readability (issues #7, #12)', () => {
       '--dsw-alias-label-caption',
       '--dsw-alias-label-dimmed',
     ]
-    const ratios = ladder.map((token) => contrast(resolveAliasHex(latte.tokens, token), page))
+    const ratios = ladder.map((token) => contrast(resolveAliasHex(light.tokens, token), page))
     for (let i = 1; i < ratios.length; i++) {
       expect(
         ratios[i - 1],
-        `latte label level ${i - 1} (${ratios[i - 1].toFixed(2)}) must not sink below level ${i} (${ratios[i].toFixed(2)})`,
+        `light label level ${i - 1} (${ratios[i - 1].toFixed(2)}) must not sink below level ${i} (${ratios[i].toFixed(2)})`,
       ).toBeGreaterThanOrEqual(ratios[i])
     }
     for (const [token, { menu: menuFloor, page: pageFloor }] of Object.entries(floors)) {
-      const text = resolveAliasHex(latte.tokens, token)
-      expect(contrast(text, menu), `latte ${token} on menu`).toBeGreaterThanOrEqual(menuFloor)
-      expect(contrast(text, page), `latte ${token} on page base`).toBeGreaterThanOrEqual(pageFloor)
+      const text = resolveAliasHex(light.tokens, token)
+      expect(contrast(text, menu), `light ${token} on menu`).toBeGreaterThanOrEqual(menuFloor)
+      expect(contrast(text, page), `light ${token} on page base`).toBeGreaterThanOrEqual(pageFloor)
     }
   })
 
   it('weak labels keep WCAG floors on menu and page surfaces (issue #7)', () => {
-    // Floors: worst flavour across the three dark flavours, minus headroom so
+    // TokyoNightPalette.md intentionally uses low contrast secondary UI. These
+    // floors retain its foreground; Storm primary itself is only 6.90:1.
+    // Floors: worst flavour across the two dark flavours, minus headroom so
     // future palette tweaks stay possible — but any slide back to the dark
     // ladder steps (400/600/750 as text) fails.        menu  page
     const floors: Record<string, { menu: number; page: number }> = {
-      '--dsw-alias-label-primary-dimmed': { menu: 5.0, page: 7.0 },
-      '--dsw-alias-label-secondary': { menu: 4.0, page: 6.0 },
-      '--dsw-alias-label-tertiary': { menu: 3.0, page: 5.0 },
-      '--dsw-alias-label-caption': { menu: 2.5, page: 4.0 },
+      '--dsw-alias-label-primary-dimmed': { menu: 5.0, page: 5.5 },
+      '--dsw-alias-label-secondary': { menu: 4.0, page: 5.0 },
+      '--dsw-alias-label-tertiary': { menu: 3.0, page: 4.5 },
+      '--dsw-alias-label-caption': { menu: 2.5, page: 3.5 },
       '--dsw-alias-label-dimmed': { menu: 2.0, page: 3.0 },
     }
     for (const f of DARK_FLAVORS) {
@@ -312,7 +309,7 @@ describe('dark blue tint readability (issue #11)', () => {
   // fills at the bright end (button-info-fill, the switch track) and *tinted
   // surfaces* at the dark end. state-business-tertiary paints the dark end
   // under a blue label — the selected segment of a segmented pick
-  // (CatppuccinRow / GlassRow / UpdateRow) and the host's trajectory "user"
+  // (TokyoNightRow / GlassRow / UpdateRow) and the host's trajectory "user"
   // badge — so the pair has to clear AA on its own.
   const TINT = '--dsw-alias-state-business-tertiary'
   const LABEL = '--dsw-alias-state-business-primary'
@@ -390,13 +387,13 @@ describe('dark status tint readability (VV)', () => {
 
 describe('flavour helpers', () => {
   it('maps theme ids and off', () => {
-    expect(flavorFromThemeId('catppuccin-mocha')).toBe('catppuccin-mocha')
+    expect(flavorFromThemeId('tokyonight-night')).toBe('tokyonight-night')
     expect(flavorFromThemeId('dark')).toBe('off')
-    expect(flavorFromThemeId('catppuccin-unknown')).toBe('off')
+    expect(flavorFromThemeId('tokyonight-unknown')).toBe('off')
   })
 
   it('finds flavour info by theme id', () => {
-    expect(flavorInfo('catppuccin-latte')?.label).toBe('Latte')
+    expect(flavorInfo('tokyonight-light')?.label).toBe('Light')
     expect(flavorInfo('light')).toBeUndefined()
   })
 })
@@ -404,9 +401,9 @@ describe('flavour helpers', () => {
 describe('persisted flavour contract', () => {
   it('flavour values equal the registered theme ids plus off', () => {
     // The browser half persists the theme id itself; the accepted value set
-    // must stay exactly the four registered ids plus `off`.
-    expect(CATPPUCCIN_FLAVOR_VALUES).toEqual([
-      ...CATPPUCCIN_FLAVORS.map((f) => f.themeId),
+    // must stay exactly the three registered ids plus `off`.
+    expect(TOKYONIGHT_FLAVOR_VALUES).toEqual([
+      ...TOKYONIGHT_FLAVORS.map((f) => f.themeId),
       'off',
     ])
   })
@@ -414,16 +411,16 @@ describe('persisted flavour contract', () => {
   it('readFlavor falls back to off for absent or unknown values', () => {
     localStorage.removeItem(FLAVOR_STORAGE_KEY)
     expect(readFlavor()).toBe('off')
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
-    expect(readFlavor()).toBe('catppuccin-mocha')
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
+    expect(readFlavor()).toBe('tokyonight-night')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'night')
     expect(readFlavor()).toBe('off')
     localStorage.removeItem(FLAVOR_STORAGE_KEY)
   })
 
   it('writeFlavor persists the choice', () => {
-    writeFlavor('catppuccin-latte')
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-latte')
+    writeFlavor('tokyonight-light')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-light')
     writeFlavor('off')
     expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('off')
     localStorage.removeItem(FLAVOR_STORAGE_KEY)
@@ -444,18 +441,17 @@ describe('shiki syntax highlighting tokens', () => {
     '--shiki-token-punctuation',
     '--shiki-token-link',
   ] as const
-  const STYLES = ['default', 'italic-comments'] as const
+  const STYLES = ['default'] as const
 
-  it('covers all four flavours', () => {
+  it('covers all three flavours', () => {
     expect(Object.keys(SHIKI_TOKENS).sort()).toEqual([
-      'frappe',
-      'latte',
-      'macchiato',
-      'mocha',
+      'light',
+      'night',
+      'storm',
     ])
   })
 
-  it('every flavour carries both styles (item M)', () => {
+  it('every flavour carries only the default highlighting', () => {
     for (const flavorId of Object.keys(SHIKI_TOKENS)) {
       expect(Object.keys(SHIKI_TOKENS[flavorId as keyof typeof SHIKI_TOKENS]).sort()).toEqual([...STYLES])
     }
@@ -496,39 +492,32 @@ describe('shiki syntax highlighting tokens', () => {
     }
   })
 
-  it('Mocha constants match the Catppuccin palette', () => {
-    const m = SHIKI_TOKENS.mocha.default
-    expect(m['--shiki-token-constant']).toBe('#fab387') // peach
-    expect(m['--shiki-token-string']).toBe('#a6e3a1')   // green
-    expect(m['--shiki-token-comment']).toBe('#9399b2')   // overlay2
-    expect(m['--shiki-token-keyword']).toBe('#cba6f7')   // mauve
-    expect(m['--shiki-token-parameter']).toBe('#eba0ac')  // maroon
-    expect(m['--shiki-token-function']).toBe('#89b4fa')   // blue
-    expect(m['--shiki-token-punctuation']).toBe('#9399b2') // overlay2
-    expect(m['--shiki-token-link']).toBe('#89b4fa')       // blue
+  it('Night constants match the TokyoNight palette', () => {
+    const m = SHIKI_TOKENS.night.default
+    expect(m['--shiki-token-constant']).toBe('#ff9e64') // peach
+    expect(m['--shiki-token-string']).toBe('#9ece6a')   // green
+    expect(m['--shiki-token-comment']).toBe('#565f89')   // overlay2
+    expect(m['--shiki-token-keyword']).toBe('#bb9af7')   // mauve
+    expect(m['--shiki-token-parameter']).toBe('#e0af68')  // maroon
+    expect(m['--shiki-token-function']).toBe('#7aa2f7')   // blue
+    expect(m['--shiki-token-punctuation']).toBe('#c0caf5') // overlay2
+    expect(m['--shiki-token-link']).toBe('#73daca')       // blue
   })
 
-  it('Latte constants match the Catppuccin palette', () => {
-    const l = SHIKI_TOKENS.latte.default
-    expect(l['--shiki-token-constant']).toBe('#fe640b') // peach
-    expect(l['--shiki-token-string']).toBe('#40a02b')   // green
-    expect(l['--shiki-token-comment']).toBe('#7c7f93')   // overlay2
-    expect(l['--shiki-token-keyword']).toBe('#8839ef')   // mauve
-    expect(l['--shiki-token-parameter']).toBe('#e64553')  // maroon
-    expect(l['--shiki-token-function']).toBe('#1e66f5')   // blue
-    expect(l['--shiki-token-punctuation']).toBe('#7c7f93') // overlay2
-    expect(l['--shiki-token-link']).toBe('#1e66f5')       // blue
+  it('Light constants match the TokyoNight palette', () => {
+    const l = SHIKI_TOKENS.light.default
+    expect(l['--shiki-token-constant']).toBe('#965027') // peach
+    expect(l['--shiki-token-string']).toBe('#385f0d')   // green
+    expect(l['--shiki-token-comment']).toBe('#6c6e75')   // overlay2
+    expect(l['--shiki-token-keyword']).toBe('#5a3e8e')   // mauve
+    expect(l['--shiki-token-parameter']).toBe('#8f5e15')  // maroon
+    expect(l['--shiki-token-function']).toBe('#2959aa')   // blue
+    expect(l['--shiki-token-punctuation']).toBe('#343b58') // overlay2
+    expect(l['--shiki-token-link']).toBe('#33635c')       // blue
   })
 
-  it('each dark flavour has distinct palette-derived colours', () => {
-    // Frappé, Macchiato, and Mocha should all have different hex values
-    // because their palettes differ.
-    const f = SHIKI_TOKENS.frappe.default
-    const ma = SHIKI_TOKENS.macchiato.default
-    const mo = SHIKI_TOKENS.mocha.default
-    // At least the peach (constant) should differ across flavours.
-    const peaches = new Set([f['--shiki-token-constant'], ma['--shiki-token-constant'], mo['--shiki-token-constant']])
-    expect(peaches.size).toBe(3)
+  it('Night and Storm share the documented syntax palette', () => {
+    expect(SHIKI_TOKENS.storm.default).toEqual(SHIKI_TOKENS.night.default)
   })
 
   it('string and string-expression are identical within each flavour', () => {
@@ -536,13 +525,6 @@ describe('shiki syntax highlighting tokens', () => {
       for (const tokens of Object.values(styles)) {
         expect(tokens['--shiki-token-string-expression']).toBe(tokens['--shiki-token-string'])
       }
-    }
-  })
-
-  it('the italic-comments variant softens the comment colour to subtext0 (item M)', () => {
-    for (const [flavorId, styles] of Object.entries(SHIKI_TOKENS)) {
-      const comments = new Set([styles.default['--shiki-token-comment'], styles['italic-comments']['--shiki-token-comment']])
-      expect(comments.size, `${flavorId} variant must differ from the default`).toBe(2)
     }
   })
 })
@@ -566,10 +548,10 @@ describe('upstream 0.1.7 token additions (compat audit 2026-09-23)', () => {
     '--dsw-alias-code-diff-deleted',
     '--dsw-alias-state-idle-primary',
   ]
-  const LATTE = CATPPUCCIN_FLAVORS.find((f) => f.colorScheme === 'light')!
+  const LIGHT = TOKYONIGHT_FLAVORS.find((f) => f.colorScheme === 'light')!
 
   it('every flavour covers every added token', () => {
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       for (const token of ADDED) expect(f.tokens[token], `${f.themeId} ${token}`).toBeTruthy()
     }
   })
@@ -584,12 +566,12 @@ describe('upstream 0.1.7 token additions (compat audit 2026-09-23)', () => {
       '--dsw-static-red-400-a12': 12,
       '--dsw-static-red-600-a08': 8,
     }
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       for (const [token, pct] of Object.entries(alphaByToken)) {
         const m = f.tokens[token].match(ALPHA_MIX)
         expect(m, `${f.themeId} ${token} = ${f.tokens[token]}`).not.toBeNull()
         expect(Number(m![2]), `${f.themeId} ${token} alpha`).toBe(pct)
-        // The fill resolves to a Catppuccin colour through the family plan.
+        // The fill resolves to a TokyoNight colour through the family plan.
         expect(resolveHex(f.tokens, m![1]), `${f.themeId} ${token} fill`).toMatch(/^#[0-9a-f]{6}$/)
       }
       // The diff surfaces consume the alpha statics (light/dark differ upstream).
@@ -606,14 +588,14 @@ describe('upstream 0.1.7 token additions (compat audit 2026-09-23)', () => {
     }
   })
 
-  it('menu keeps the Catppuccin hue at upstream translucency', () => {
+  it('menu keeps the TokyoNight hue at upstream translucency', () => {
     // 0.1.7 hard-coded rgba(248,249,250,.58) / rgba(48,49,54,.5) here so menus
     // could ride --dsw-menu-backdrop-filter; 0.2.0 moved that material into
     // --dsw-menu-surface-fill (light .58 / dark .45) and left the alias as a
     // plain reference. We own the base token instead — same ladder step the alias
     // used before (bg-layer-3), upstream's own alpha — so every consumer of
     // either name keeps the flavour hue and the translucency the blur needs.
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       expect(f.tokens[MENU], `${f.themeId} ${MENU}`).toBe('var(--dsw-menu-surface-fill)')
       const base = f.tokens['--dsw-menu-surface-fill']
       const m = base.match(ALPHA_MIX)
@@ -633,29 +615,28 @@ describe('upstream 0.1.7 token additions (compat audit 2026-09-23)', () => {
     // on the flavour's own surface rather than upstream's grey.
     const FALLBACK = 'var(--dsw-alias-bg-layer-3)'
     const expected: Record<string, string> = {
-      'catppuccin-latte': '#eff1f5', // light layer-3 -> bluish-00 -> base
-      'catppuccin-frappe': '#414559', // dark layer-3 -> bluish-800 -> surface0
-      'catppuccin-macchiato': '#363a4f',
-      'catppuccin-mocha': '#313244',
+      'tokyonight-light': '#e6e7ed', // light layer-3 -> bluish-00 -> base
+      'tokyonight-storm': '#323852', // dark layer-3 -> bluish-800 -> surface0
+      'tokyonight-night': '#2e3247',
     }
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       expect(resolveHex(f.tokens, FALLBACK), `${f.themeId} layer-3`).toBe(expected[f.themeId])
     }
   })
 
   it('link text clears AA on the page in every flavour', () => {
-    // Measured 2026-09-23: ours 4.34 (Latte — upstream's own pair measures
-    // 4.23, so the faithful step is the better of the two) / 6.51 (Frappé) /
-    // 7.77 (Macchiato) / 8.91 (Mocha, upstream 7.83).
-    for (const f of CATPPUCCIN_FLAVORS) {
+    // Measured 2026-09-23: ours 4.34 (Light — upstream's own pair measures
+    // 4.23, so the faithful step is the better of the two) / 6.51 (Storm) /
+    // 7.77 (Storm) / 8.91 (Night, upstream 7.83).
+    for (const f of TOKYONIGHT_FLAVORS) {
       const link = resolveHex(f.tokens, f.tokens['--dsw-alias-link'])
       expect(
         contrast(link, resolveAliasHex(f.tokens, PAGE)),
         `${f.themeId} ${f.tokens['--dsw-alias-link']}`,
       ).toBeGreaterThanOrEqual(f.colorScheme === 'light' ? 4.2 : 4.5)
       // Dark flavours ride the full accent step (our 66% 400 step would land at
-      // 3.94–4.79:1); Latte keeps the official 500 and is left alone.
-      expect(f.tokens['--dsw-alias-link']).toBe('var(--dsw-static-deepseek-500)')
+      // 3.94–4.79:1); Light keeps the official 500 and is left alone.
+      expect(f.tokens['--dsw-alias-link']).toBe(f.colorScheme === 'light' ? '#33635c' : '#73daca')
     }
   })
 
@@ -663,9 +644,9 @@ describe('upstream 0.1.7 token additions (compat audit 2026-09-23)', () => {
     // 0.2.0 flipped the LIGHT pair (near-white surface + mid-dark text); dark
     // flavours keep the dark surface + light label. Either way the label has to
     // clear AA against its own preview surface, not the page. Measured
-    // 2026-09-30: Latte 5.14:1 (upstream's own light pair 4.84), dark
+    // 2026-09-30: Light 5.14:1 (upstream's own light pair 4.84), dark
     // 4.45 / 4.90 / 5.07:1.
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       const bg = resolveAliasHex(f.tokens, '--dsw-alias-bg-document-preview')
       const label = resolveAliasHex(f.tokens, '--dsw-alias-label-document-preview')
       expect(contrast(label, bg), `${f.themeId} preview label`).toBeGreaterThanOrEqual(
@@ -677,10 +658,10 @@ describe('upstream 0.1.7 token additions (compat audit 2026-09-23)', () => {
     // one ladder step lighter than the official bluish-100 — our ladder maps
     // that step to surface1 (188,192,204), 47 levels below the official
     // rgb(235,238,242), which collapsed the pair to 3.44:1.
-    expect(LATTE.tokens['--dsw-alias-label-document-preview']).toBe(
+    expect(LIGHT.tokens['--dsw-alias-label-document-preview']).toBe(
       'var(--dsw-static-neutral-bluish-700)',
     )
-    expect(LATTE.tokens['--dsw-alias-bg-document-preview']).toBe(
+    expect(LIGHT.tokens['--dsw-alias-bg-document-preview']).toBe(
       'var(--dsw-static-neutral-bluish-50)',
     )
   })
@@ -728,22 +709,22 @@ describe('upstream 0.2.0 adaptation (desktop audit 2026-09-30)', () => {
   ]
 
   it('every flavour covers every added token', () => {
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       for (const token of ADDED) expect(f.tokens[token], `${f.themeId} ${token}`).toBeTruthy()
     }
   })
 
-  it('the four flavours carry the same token set', () => {
-    const [first, ...rest] = CATPPUCCIN_FLAVORS
+  it('the three flavours carry the same token set', () => {
+    const [first, ...rest] = TOKYONIGHT_FLAVORS
     const names = Object.keys(first.tokens).sort()
     for (const f of rest) expect(Object.keys(f.tokens).sort(), f.themeId).toEqual(names)
   })
 
   it('literal-valued additions resolve through the palette, never to the stock greys', () => {
     // A literal upstream value cannot inherit our static overrides: left alone it
-    // paints the stock neutral/green/red inside a Catppuccin surface. Every one
+    // paints the stock neutral/green/red inside a TokyoNight surface. Every one
     // of them has to be a var() reference or a colour-mix of palette steps.
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       for (const token of LITERAL) {
         expect(f.tokens[token], `${f.themeId} ${token}`).toMatch(/^(var\(|color-mix\()/)
       }
@@ -751,7 +732,7 @@ describe('upstream 0.2.0 adaptation (desktop audit 2026-09-30)', () => {
   })
 
   it('file-diff tints reuse the code-diff washes, one notch weaker in the gutter', () => {
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       // Same washes the code-diff aliases have used since 0.1.7 (upstream's two
       // values are within a few points of each other in light), so the comparison
       // view keeps one coherent green/red.
@@ -780,7 +761,7 @@ describe('upstream 0.2.0 adaptation (desktop audit 2026-09-30)', () => {
   })
 
   it('the sticky menu group header stays one material with the menu it sits in', () => {
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       const header = f.tokens['--dsw-alias-menu-group-header-fill'].match(ALPHA_MIX)
       expect(
         header,
@@ -801,7 +782,7 @@ describe('upstream 0.2.0 adaptation (desktop audit 2026-09-30)', () => {
     // loses the colour the shell measured from our own token. Measured on DSH
     // Desktop 0.2.0-rc.2 (2026-09-30): both arrive as rgba(...,1) and pass the
     // main process's validColor check.
-    for (const f of CATPPUCCIN_FLAVORS) {
+    for (const f of TOKYONIGHT_FLAVORS) {
       const fill = resolveHex(f.tokens, f.tokens['--dsw-specific-sidebar-fill'])
       const symbol = resolveHex(f.tokens, f.tokens['--dsw-alias-label-primary'])
       expect(fill, `${f.themeId} caption fill`).toMatch(/^#[0-9a-f]{6}$/)

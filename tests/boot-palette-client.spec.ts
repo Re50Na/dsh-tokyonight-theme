@@ -95,11 +95,11 @@ describe('the boot restore retires the pre-paint palette', () => {
   })
 
   it('drops the sheet once the persisted flavour is applied', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     injectSheet()
     const { preference } = mount()
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(preference()).toBe('catppuccin-mocha')
+    expect(preference()).toBe('tokyonight-night')
     expect(marked()).toBeNull()
   })
 
@@ -112,10 +112,10 @@ describe('the boot restore retires the pre-paint palette', () => {
   })
 
   it('is a no-op when the Host injected nothing (pre-0.6.6 / flavor off hosts)', async () => {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-mocha')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-night')
     const { preference } = mount()
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(preference()).toBe('catppuccin-mocha')
+    expect(preference()).toBe('tokyonight-night')
     expect(marked()).toBeNull()
   })
 })

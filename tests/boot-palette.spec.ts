@@ -3,7 +3,7 @@
  * Pre-paint palette rows (issue #30 補充, 2026-10-27).
  *
  * The Host ships the persisted flavour's token table inside the index HTML so
- * the first frame is Catppuccin instead of the official dark the theme
+ * the first frame is TokyoNight instead of the official dark the theme
  * bootstrap paints. These cases pin the two things that can go wrong silently:
  * injecting for a state that must NOT be painted (no flavour / a legacy host
  * whose config is not a volatile ref), and letting user text escape the
@@ -17,7 +17,7 @@ import {
   bootPaletteStyle,
   cssSafeOverrides,
 } from '../src/boot-palette.ts'
-import { CATPPUCCIN_FLAVORS } from '../src/client/palettes.ts'
+import { TOKYONIGHT_FLAVORS } from '../src/client/palettes.ts'
 
 /** A volatile config ref, the shape DSH >= 0.1.7 hands `apply`. */
 const ref = (value: unknown) => ({ get: () => value })
@@ -27,20 +27,20 @@ describe('bootPaletteRows (issue #30 補充)', () => {
     expect(bootPaletteRows(undefined)).toEqual([])
     expect(bootPaletteRows({})).toEqual([])
     expect(bootPaletteRows({ flavor: ref('off') })).toEqual([])
-    expect(bootPaletteRows({ flavor: ref('catppuccin-nope') })).toEqual([])
+    expect(bootPaletteRows({ flavor: ref('tokyonight-nope') })).toEqual([])
     expect(bootPaletteRows({ flavor: ref(undefined) })).toEqual([])
   })
 
   it('injects nothing on a legacy host, where the config field is not a ref', () => {
     // Below DSH 0.1.7 the entry config is the profile patch's STATIC value, not
     // the settings document — painting it would fight the durable choice.
-    expect(bootPaletteRows({ flavor: 'catppuccin-frappe' })).toEqual([])
-    expect(bootPaletteRows({ flavor: ref('catppuccin-frappe'), overrides: { '--x': 'red' } }))
+    expect(bootPaletteRows({ flavor: 'tokyonight-storm' })).toEqual([])
+    expect(bootPaletteRows({ flavor: ref('tokyonight-storm'), overrides: { '--x': 'red' } }))
       .toHaveLength(2)
   })
 
   it('emits a head style row plus a body script row for every flavour', () => {
-    for (const flavor of CATPPUCCIN_FLAVORS) {
+    for (const flavor of TOKYONIGHT_FLAVORS) {
       const rows = bootPaletteRows({ flavor: ref(flavor.themeId) })
       expect(rows).toHaveLength(2)
       expect(rows[0]).toMatchObject({ kind: 'html', placement: 'head' })
@@ -51,7 +51,7 @@ describe('bootPaletteRows (issue #30 補充)', () => {
       expect(html).toContain('html body,html body[data-ds-dark-theme]{')
       // The whole table has to ride along: the alias tokens are `var(...)`
       // references into the static ones, so a subset would resolve to the
-      // official values and paint a half-Catppuccin frame.
+      // official values and paint a half-TokyoNight frame.
       for (const name of Object.keys(flavor.tokens)) expect(html).toContain(`${name}:`)
       expect((rows[1] as { text: string }).text)
         .toBe(`(()=>{document.body.toggleAttribute('data-ds-dark-theme',${flavor.colorScheme === 'dark'})})()`)
@@ -59,7 +59,7 @@ describe('bootPaletteRows (issue #30 補充)', () => {
   })
 
   it('keeps the canvas colour derivable from the table it just declared', () => {
-    const flavor = CATPPUCCIN_FLAVORS[1]
+    const flavor = TOKYONIGHT_FLAVORS[1]
     const html = bootPaletteStyle(flavor)
     // The boot splash reads `var(--dsw-alias-bg-base, var(--dsh-boot-bg, Canvas))`
     // and `--dsw-alias-bg-base` is itself a `var(--dsw-static-*)` alias, so the
@@ -69,7 +69,7 @@ describe('bootPaletteRows (issue #30 補充)', () => {
   })
 
   it('never lets a value close the element it is concatenated into', () => {
-    for (const flavor of CATPPUCCIN_FLAVORS) {
+    for (const flavor of TOKYONIGHT_FLAVORS) {
       const html = bootPaletteStyle(flavor, { '--dsw-static-blue-500': '#89b4fa' })
       // The element's own closing tag is the only one allowed: the row contract
       // (IndexInjection) is "text must not contain `</style`".
@@ -85,14 +85,14 @@ describe('bootPaletteRows (issue #30 補充)', () => {
   // the truth (the Client's own listener dies once a flavour id pins
   // `nativeTheme.themeSource`). See docs/issue-36-follow-system.md §2.
   it('paints both halves for follow mode, the dark one behind a media query', () => {
-    const light = CATPPUCCIN_FLAVORS.find((flavor) => flavor.themeId === 'catppuccin-latte')
-    const dark = CATPPUCCIN_FLAVORS.find((flavor) => flavor.themeId === 'catppuccin-mocha')
+    const light = TOKYONIGHT_FLAVORS.find((flavor) => flavor.themeId === 'tokyonight-light')
+    const dark = TOKYONIGHT_FLAVORS.find((flavor) => flavor.themeId === 'tokyonight-night')
     if (light === undefined || dark === undefined) throw new Error('palette fixtures missing')
 
     const rows = bootPaletteRows({
-      flavor: ref('catppuccin-latte'),
+      flavor: ref('tokyonight-light'),
       followSystem: ref(true),
-      followDark: ref('catppuccin-mocha'),
+      followDark: ref('tokyonight-night'),
     })
     expect(rows).toHaveLength(2)
     const html = (rows[0] as { html: string }).html
@@ -113,10 +113,10 @@ describe('bootPaletteRows (issue #30 補充)', () => {
 
   it('falls back to the fixed flavour when follow mode has no usable dark half', () => {
     const rows = bootPaletteRows({
-      flavor: ref('catppuccin-latte'),
+      flavor: ref('tokyonight-light'),
       followSystem: ref(true),
-      // Latte is a LIGHT flavour — not a legal dark end.
-      followDark: ref('catppuccin-latte'),
+      // Light is a LIGHT flavour — not a legal dark end.
+      followDark: ref('tokyonight-light'),
     })
     const html = (rows[0] as { html: string }).html
     expect(html).not.toContain('@media (prefers-color-scheme')
@@ -127,7 +127,7 @@ describe('bootPaletteRows (issue #30 補充)', () => {
     expect(bootPaletteRows({
       flavor: ref('off'),
       followSystem: ref(true),
-      followDark: ref('catppuccin-mocha'),
+      followDark: ref('tokyonight-night'),
     })).toEqual([])
   })
 })
@@ -165,7 +165,7 @@ describe('cssSafeOverrides', () => {
   })
 
   it('appends the surviving overrides AFTER the table so they win', () => {
-    const flavor = CATPPUCCIN_FLAVORS[0]
+    const flavor = TOKYONIGHT_FLAVORS[0]
     const html = bootPaletteStyle(flavor, { '--dsw-static-blue-500': '#abcdef' })
     // `#abcdef` names no value in the table, so its position is unambiguous.
     const overrideAt = html.indexOf('--dsw-static-blue-500:#abcdef')

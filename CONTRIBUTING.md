@@ -1,148 +1,32 @@
-# CONTRIBUTING.md — dsh-catppuccin 贡献指南
+# Contributing
 
-感谢你愿意给这个插件添砖加瓦。开始之前请先读
-[AGENTS.md](AGENTS.md) 的两节：「项目定位与核心目标」（**核心目标是把官方
-Catppuccin 配色适配到 DSH；官方色板是默认取色来源，官方取值在 DSH 下确实不成立时可有据偏离；
-玻璃质感是叠加的附带目标**）
-与「项目身份速览」——仓库存在三套名字
-（GitHub 仓库名 / npm 包名 / 插件 ID），**大多数 `dsh-catppuccin` 字样都不该改**。
+本项目是 DeepSeek Harness 的 Tokyo Night 主题插件。
 
-## 技术栈速览
+## 配色与生成物
 
-| 面 | 位置 | 说明 |
-|---|---|---|
-| Host half | `src/index.ts`、`src/update-check/host.ts` | cordis 插件入口：settings namespace 注册 + `/catppuccin/check-update` 路由 |
-| Client half | `src/client/` | 浏览器 bundle（`exports["./client"]`）：主题注册、**一个 `settings.section` 独立设置页**（issue #27 起，不再是 General 里的多行；页内是四条行组件——`CatppuccinRow` 主题 + 代码高亮 / `GlassRow` 玻璃质感 / `UpdateRow` 检查更新 / `LinksRow` 反馈与支持（纯静态、无 inject），组装见 `settings-section.tsx`，注册见 `src/client/index.ts` 的 `slots.inject('settings.section')`）、插件详情页的 `plugins.bundle.config` 卡片、玻璃皮肤 |
-| TUI half | `src/tui-themes.ts` | 子路径 `./tui-themes`：把四套主题 JSON 同步进 `~/.dsh-tui/themes/` |
-| 调色板 | `scripts/generate-palettes.mjs` → `src/client/palettes.ts` | **AUTO-GENERATED，不要手改** |
-| 玻璃 CSS | `src/client/glass/glass.module.css` → 构建时生成 `glass-css.gen.ts` | 样式源文件；改完跑 `pnpm build` |
-| 契约 | `src/state.ts`、`src/update-check.ts` | 两个 half 共享、无运行时依赖 |
-| 持久化写侧 | `src/client/state-sync.ts` | settings 文档的 revision-fenced 原子写 + 多标签页读侧一致性 |
+以 `TokyoNightPalette.md` 为配色依据。共用语义色板位于
+`data/tokyonight-palette.json`，DSH token 快照及来源见 `data/README.md`。
 
-## 常用命令
+修改映射或色板后运行：
 
 ```sh
-pnpm install
-pnpm typecheck       # tsc --noEmit：src 的类型检查
-pnpm typecheck:tests # tsc --noEmit：tests 的类型检查（vitest 跑 esbuild，不做类型检查）
-pnpm test            # vitest 跑配色表 / 契约 / e2e 覆盖测试
-pnpm build           # tsdown 构建 -> lib/index.js（服务端）+ lib/client.js（浏览器）
+pnpm gen:all
 ```
 
-配色表由生成器脚本产出——修改 `scripts/generate-palettes.mjs` 后重跑
-（`--pin <sha>` 可把上游 commit SHA 写进 `palettes.ts` 头部，见
-`docs/plugin-improvements.md` 的 L 项）：
+不要手工编辑 `src/client/palettes.ts`、`src/client/shiki-tokens.ts`
+和 `themes/tokyonight-*.json`；它们由脚本生成。
+
+## 本地开发
 
 ```sh
-node scripts/generate-palettes.mjs [--pin <upstream-sha>]
+pnpm install --frozen-lockfile
+pnpm build
 ```
 
-CHANGELOG 草稿由 conventional 提交生成（提交正文里的 `EN:` 行会被渲染成英文摘要）：
+使用本地路径安装插件后，重新构建并重启 DSH 即可查看修改。
+常规验证命令为 `pnpm typecheck`、`pnpm typecheck:tests`、`pnpm test`；
+具体是否运行以当前任务要求为准。
 
-```sh
-pnpm changelog:gen            # 打印上一 tag 之后的草稿
-pnpm changelog:gen -- --write # 直接写入 [Unreleased] 节
-```
+主题注册、设置持久化及玻璃层的几何与兼容性保护应保留。
 
-对外 API（`./client`、`./tui-themes` 子路径导出）的 typedoc 文档**按需本地生成**到
-`docs/api/`（该目录不入库、已进 `.gitignore`；哪天真需要在线版本再接 CI 发布）：
-
-```sh
-pnpm docs:api
-```
-
-## 本地链接调试
-
-克隆到本地后，把包链接进 profile（把路径换成你自己的；`$DSH_HOME` 默认是 `~/.dsh`）：
-
-```sh
-pnpm --dir ~/.dsh/profiles/web add link:/path/to/dsh-catppuccin
-# Windows 例：
-# pnpm --dir C:\Users\<you>\.dsh\profiles\web add link:D:\dev\dsh-catppuccin
-```
-
-再把 `@nonamelego/dsh-catppuccin` 加进 profile `package.json` 的
-`dsh.profile.bundles`，重启 `dsh web`。两个桌面壳用 `~/.dsh/profiles/desktop` 对应路径
-（装/升方式见 README 的「安装 → 桌面版」表；注意 `desktop` 这个 profile 名**不能**用系统
-PATH 上的 `dsh` 管理）。
-
-## 怎么加一个风味（flavor）
-
-1. **确认上游色板**：风味必须来自
-   [catppuccin/catppuccin](https://github.com/catppuccin/catppuccin)（上游 2.0.0 重组后根目录
-   `palette.json` 已删，改取 npm 包 `@catppuccin/palette@1.8.0` 的 `esm/palette.js`；本机缓存
-   `.cache/dsh-ref/catppuccin-palette.json`，脚本读它生成）。
-2. **改 `scripts/generate-palettes.mjs`**：
-   - `FLAVORS` 数组加 `{ id, label }`（大小写与官方一致，如 `Frappé`）；
-   - 若新风味是深色系，确认缓存 `catppuccin-palette.json` 里它的 `dark: true`，浅色系则
-     `false`——映射表按 `dark` 自动选 Latte/暗色分支；
-   - 重跑 `node scripts/generate-palettes.mjs --pin <upstream-sha>` 生成
-     `src/client/palettes.ts`（pin 用于锁定上游版本，见改进项 L）。
-3. **接链条**：
-   - `src/client/shiki-tokens.ts`：补标「默认 + italic-comments」两套色板；
-   - `src/state.ts` 的 `CATPPUCCIN_THEME_IDS` 加 themeId
-     （`catppuccin-<id>` 命名空间归本插件所有）；
-   - `src/client/index.ts` 的 `CATPPUCCIN_FLAVOR_VALUES` 由 palettes 导出
-     自动跟随，无需手改；
-   - `src/client/locales.ts` 的**每个语言**都补 `flavor.<id>` 与
-     `flavor.<id>.subtitle` 键（zh 是 key 集合的 source of truth，
-     `tests/locales.spec.ts` 会拦截漏键）。
-4. **测试**：`pnpm typecheck && pnpm test`，`tests/palettes.spec.ts` 的
-   对比度 / 单调性断言会替你兜住映射错误。视觉效果需要截图交给视觉复核
-   （对比度等纯计算项可以自己先算）。
-
-## 怎么改 token 映射
-
-- 只改 `scripts/generate-palettes.mjs` 的映射表，**不要改**
-  `src/client/palettes.ts`（顶部 `AUTO-GENERATED`）。
-- 改完 `pnpm gen:palettes` 重生成。**默认取官方色板**（见 AGENTS.md
-  「项目定位与核心目标」）：对比度问题先调混色目标（`base` / `crust`）与层级
-  档位，**先不要换色相**；穷尽后仍不达标（例如官方色在 DSH 的实际用法下达不到 AA）
-  才偏离官方取值，并必须在代码注释 + CHANGELOG 写明理由与对照值。
-- 验收分两条路：**纯数值可判定**的对比度改动（如 issue #11 的蓝梯、VV 的绿 /
-  琥珀 900 步）用 `tests/palettes.spec.ts` 的 WCAG 断言验收；涉及**观感**的改动
-  （材质、圆角、光晕、亮度观感）必须附截图给视觉模型或人工复核。
-- `tests/palettes.spec.ts` 的地板断言覆盖 WCAG 对比度与暗色层级单调性。
-
-## 玻璃皮肤
-
-- 样式文件：`src/client/glass/glass.module.css`（构建时由
-  `pnpm build` 重新生成 `glass-css.gen.ts`，改完记得跑 build 让
-  `pnpm test` 与产物同步）。
-- 不要手改 `glass-css.gen.ts`。
-- 视觉规则（圆角、光晕、纹理）改动需要截图复核；逻辑（seam、
-  lifecycle、localStorage 持久化）在 `glass-layer.ts` / `glass-seams.ts`，
-  纯逻辑改动可以直接测。
-
-## TUI 主题
-
-- 四套官方主题在 `themes/`（`pnpm gen:themes` 生成，读同一份色板缓存）。
-- `src/tui-themes.ts` 的 `syncTuiThemes` 契约：owned 文件冲突默认
-  `.bak` 备份；`dryRun` 只报告；`catppuccin-community/` 子目录
-  write-if-missing。
-- 改同步逻辑后看 `tests/tui-themes.spec.ts`（用临时目录，不碰真 home）。
-
-## 测试要求
-
-- 每次改动跑 `pnpm typecheck && pnpm typecheck:tests && pnpm test`，保持绿
-  （前两条分别是 src 与 tests 两个 tsconfig 的类型检查，CI 也跑它们）。
-- **行级组件测试**在 `tests/rows.spec.tsx`（RTL + jsdom）。约定：四个 row 的依赖
-  全部是 props，所以用**注入面 fake** 渲染，不碰模块全局；fake 的快照函数必须返回
-  **稳定引用**（`useSyncExternalStore` 按引用比较，每次新建对象会无限重渲染）。
-  新增交互时优先在这里补断言——纯逻辑测试盖不到“打字时那行会不会消失”这类缺陷。
-- 新增/修改 `src/state.ts` 契约字段时，同步更新 `tests/state.spec.ts`
-  与 `tests/client.spec.ts` 的断言（字段有专门的镜像守卫测试）。
-- 涉及 settings 文档/持久化：看 `docs/state-migrations.md` 的约定。
-- 纯视觉改动：无法用单测断言的部分必须附截图说明。
-
-## 提交信息
-
-中文 conventional 风格：`feat(...)` / `fix(...)` / `chore(...)` 等；
-希望 changelog 带英文摘要时在正文写一行 `EN: <英文摘要>`。
-
-## 发版
-
-发版由 maintainer 走 GitHub Actions（OIDC Trusted Publisher），
-**不要手动 `npm publish`**（CI 故障时的紧急回退见 AGENTS.md）。
-发布是**推 `v*` tag 触发的**（见 `.github/workflows/publish.yml`），所以 tag 由
-maintainer 按 AGENTS.md 的 SOP 打并推——普通 PR 不要打 tag。
+保留 `LICENSE` 与 `THIRD_PARTY_NOTICES.md` 中的声明。

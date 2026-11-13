@@ -1,13 +1,13 @@
 /* ============================================================================
- * Catppuccin glass layer — a toggleable glassmorphism skin for the DeepSeek
- * Harness web GUI, riding on top of the Catppuccin themes.
+ * TokyoNight glass layer — a toggleable glassmorphism skin for the DeepSeek
+ * Harness web GUI, riding on top of the TokyoNight themes.
  *
  * Every rule is gated on the `data-dsh-glass` attribute the plugin puts on
  * <html> while enabled (removed on disable), so off == the stock UI, exactly.
  * The fill colours are derived from the ACTIVE theme's design tokens via
- * color-mix(), so the glass automatically picks up the current Catppuccin
- * flavour (Latte / Frappé / Macchiato / Mocha) — or the stock light/dark
- * palette when no Catppuccin theme is active.
+ * color-mix(), so the glass automatically picks up the current TokyoNight
+ * flavour (Night / Storm / Light) — or the stock light/dark
+ * palette when no TokyoNight theme is active.
  *
  * Glass recipe (aligned with DSH-Transparent-UI-Plugin / Aqua):
  *  - FLAT translucent fill (no vertical gradient — a darker bottom stop
@@ -52,7 +52,7 @@
      reserved for the MAIN INPUT SURFACE (the composer card — hero and
      session views share the same rule): it sits flat on the page ground
      with a fill all but identical to it, so 18% measures as an invisible boundary
-     there (rim ≈ rgb(210,212,220) on the rgb(239,241,245) Latte ground,
+     there (rim ≈ rgb(210,212,220) on the rgb(239,241,245) Light ground,
      ΔRGB ≤ 31 at 1x — issue #22 follow-up, 2026-10-11 CDP evidence).
      30% measures ΔRGB ≈ 52 and still stays below the label text colour. */
   --dsh-glass-rim: color-mix(in srgb, var(--dsw-alias-label-primary) 18%, transparent);
@@ -69,17 +69,17 @@
      instead of the single soft drop — a near-field edge
      shadow plus a wider halo, the same structure as stock's own composer
      shadow (`0 4px 16px` + `0 0 24px` at 3%), scaled up ~3x so the lift
-     actually reads on the near-white Latte ground (stock's own faintness
+     actually reads on the near-white Light ground (stock's own faintness
      still looked flat there; the default 38% drop measured invisible). */
   --dsh-glass-input-shadow:
     0 1px 2px color-mix(in srgb, var(--dsw-alias-bg-mask-2) 65%, transparent),
     0 8px 24px color-mix(in srgb, var(--dsw-alias-bg-mask-2) 80%, transparent);
   /* Ground ambience (issue #25). The card fill above is layer-1 @ α over
      bg-base — ΔRGB ≤ 2/255 on the dark flavours at the default frost and
-     EXACTLY 0 on Latte (layer-1 === bg-base there), so over the former
+     EXACTLY 0 on Light (layer-1 === bg-base there), so over the former
      FLAT ground every pane read as "the same colour as the page". The
      ground now carries a same-family wash plus two low-alpha glows, built
-     only from mapped tokens (all four flavours follow automatically) and
+     only from mapped tokens (all three flavours follow automatically) and
      TRANSMITTED by the translucent fills. `--dsh-glass-ground` is the
      brightness-mixed base — the one stop the knob moves;
      `--dsh-glass-ambience` = 1 − |brightness − 50| / 50, purely in CSS:
@@ -123,7 +123,7 @@
     0 1px 2px color-mix(in srgb, var(--dsw-alias-bg-mask-2) 65%, transparent),
     0 8px 24px color-mix(in srgb, var(--dsw-alias-bg-mask-2) 80%, transparent);
   /* Ground wash, dark side (issue #25): bg-layer-1 is the tint (mantle
-     above the crust-toned bg-base on Mocha). The light block mixes white
+     above the crust-toned bg-base on Night). The light block mixes white
      instead — its layer ladder collapses to bg-base, this one does not.
      The ambience-weighted mix itself lives in the background rule (see
      the light block's note — do not move it back into a custom
@@ -219,7 +219,7 @@
    `background: var(--dsw-specific-sidebar-fill)` upstream, and `centerCol`
    cuts a `--dsh-windows-content-radius` (16px) corner INTO its own
    `--dsw-alias-bg-base` plate. With the frame transparent, the sliver behind
-   that rounded corner stopped showing the sidebar colour (Latte
+   that rounded corner stopped showing the sidebar colour (Light
    `neutral-bluish-50` #e6e9ef) and started showing the page ground — i.e. the
    #25 wash plus glow 1 (12% share at 18%/6%, scaled by the strength knob), a
    pale-blue wedge at the top-left of the content column. Mica never shows it:
@@ -267,7 +267,7 @@ html[data-dsh-glass-compat][data-windows-titlebar] [data-dsh-glass-frame] {
    EXCEPT the transcript, which stayed a flat crust plate — i.e. it could not
    transmit the #26 wash.
    Measured on the real layout with the desktop marker simulated (Windows
-   shell, Mocha / mica / frost 20, 2026-10-16): at the top of the window the
+   shell, Night / mica / frost 20, 2026-10-16): at the top of the window the
    sidebar area read rgb(19,20,31) and its card rgb(21,21,33), while the
    transcript read exactly rgb(17,17,27) top to bottom — a hard left/right
    step of up to (4,4,6) (the reporter's "还是有色差" screenshot), on a page
@@ -516,7 +516,7 @@ html[data-dsh-glass-compat][data-windows-titlebar] [data-dsh-glass-frame] {
    `button[class*="newSession"]`), a control that lives INSIDE the sidebar
    card — and that card rides `--dsh-glass-rim-soft` since issue #26. At the
    base step the button measured BRIGHTER than the frame around it
-   (peak rgb(61,63,78) vs rgb(51,52,67) on Mocha), an inverted hierarchy:
+   (peak rgb(61,63,78) vs rgb(51,52,67) on Night), an inverted hierarchy:
    a container must never be dimmer than the control it holds. The raised
    64% fill + the edge light already carry the "primary action" read; the rim
    only has to separate the bead from the sheet. */
@@ -533,7 +533,7 @@ html[data-dsh-glass-compat][data-windows-titlebar] [data-dsh-glass-frame] {
 
 /* Chat message bubbles: frosted glass over the solid page ground. A touch
    clearer than the panes (46% vs 52%) so long transcripts
-   stay airy; the fill comes from theme tokens, so the four Catppuccin
+   stay airy; the fill comes from theme tokens, so the three TokyoNight
    palettes stay faithful instead of a fixed white/black tint.
    Scoped to the conversation transcript (data-conversation-scroll): the
    bare `[class*='bubble']` substring also hits third-party widgets whose
@@ -551,7 +551,7 @@ html[data-dsh-glass-compat][data-windows-titlebar] [data-dsh-glass-frame] {
    `span._bubble_44yfq_1[role='tooltip']` inside [data-conversation-scroll]).
    The tooltip paints `--dsw-alias-tooltip-bg` itself and hardcodes its text
    to `--dsw-static-neutral-bluish-00`, so replacing that fill with a light
-   glass tint made the label unreadable on Latte: measured bg
+   glass tint made the label unreadable on Light: measured bg
    `color(srgb .937 .945 .961 / .184)` vs text `rgb(239,241,245)` ≈ 1.0:1
    (glass off: `rgb(76,79,105)` vs the same text = 7.06:1). The same
    fire-and-forget substring also painted `BfLV8a_bubbleWidth`, a pure size
@@ -595,7 +595,7 @@ html[data-dsh-glass-compat][data-windows-titlebar] [data-dsh-glass-frame] {
    `data-reader-reasoning-card` / `-heading` / `-scroll` / `-text`). Its stock
    material is the only OPAQUE slab in the whole transcript: it declares
    `border: 1px solid var(--dsw-alias-border-l2)` (white 12% on the dark
-   flavours), `background: var(--dsw-alias-bg-module-platform)` (Mocha
+   flavours), `background: var(--dsw-alias-bg-module-platform)` (Night
    #313244) and a 12px radius — against our 14px surfaces.
    measured on the live page (0.2.0-rc.2, mica): rgb(49,50,68) opaque fill,
    rgba(255,255,255,.12) hairline, no shadow, no blur — i.e. a plate glued
@@ -603,7 +603,7 @@ html[data-dsh-glass-compat][data-windows-titlebar] [data-dsh-glass-frame] {
    the themed rim, which is exactly what the reporter saw.
    The seat below changes ALPHA / RIM / RADIUS only, never the hue: the fill is
    mixed from the plugin's OWN token (rule 4 — the same ladder step it names),
-   so all four flavours follow automatically, and the frost knob keeps working
+   so all three flavours follow automatically, and the frost knob keeps working
    inside the panel. Both modes get the same recipe on purpose (the mode switch
    is about LAYOUT, not about how much skin you get) and NEITHER adds a
    `backdrop-filter`: the card is a block in the transcript flow, so its
@@ -634,12 +634,12 @@ html[data-dsh-glass-compat][data-windows-titlebar] [data-dsh-glass-frame] {
    `@deepseek-ai/dsh-client-ui-deliverables` bundle (0.2.0-rc.2, the version
    inside the desktop shell's app.asar). It paints the block as an OPAQUE
    three-step stack — card root `background: var(--dsw-alias-bg-layer-1)`
-   (Mocha #181825), card header and presented-file cards
+   (Night #181825), card header and presented-file cards
    `background: var(--changes-fill)` / `var(--deliverable-fill)` =
-   `--dsw-static-neutral-850` (Mocha #1e1e2e, Latte #e6e9ef), the file rows
+   `--dsw-static-neutral-850` (Night #1e1e2e, Light #e6e9ef), the file rows
    painting nothing so the root's darker plate shows through. The mica sidebar
    is ONE 52% `--dsh-glass-card` sheet with the themed rim, so the artifacts read
-   as a separate plate — worst on Latte, where the header lands DARKER than the
+   as a separate plate — worst on Light, where the header lands DARKER than the
    near-white ground.
    measured 2026-10-16 (reporter's 2x screenshot + the harness behind
    .debug/ui-adapt/art-compare-<flavour>.png, real Chromium at 2x): stock header
@@ -733,18 +733,18 @@ html[data-dsh-glass-float] [data-presented-file] > :first-child {
    defines that alias as `--dsw-alias-interactive-bg-hover` on the DARK
    flavours, i.e. a NEUTRAL white overlay: `rgba(255,255,255,.08)` at rest,
    `.14` while hovered, over a `.5px` `border-l1` hairline (white 6%) at the
-   20px `--dsw-radius-xl`. Measured on the Mocha ground
+   20px `--dsw-radius-xl`. Measured on the Night ground
    (`--dsw-alias-bg-base` = #11111b): #24242d at rest, #32323b hovered — the
    reporter's screenshot reads exactly #32323b / rgb(52,52,62), so it was taken
    while the card was hovered (they had just expanded it). This is not a missing
    token: the notice is the only transcript block this skin never seated.
    The seat changes ALPHA / RIM / RADIUS only (rule 4 — the same ladder step the
    sidebar and the deliverables block use), so the frost knob keeps driving the
-   card and all four flavours follow automatically. Same Mocha ground:
+   card and all three flavours follow automatically. Same Night ground:
    #141420 at frost 45 (#12121d at the shipped frost 20) with the
    `--dsh-glass-rim-soft` hairline (#323342) instead of the neutral 6% white
    (#1f1f29) — i.e. it joins the sidebar/artifact family (#151520 / #141420)
-   rather than floating on it as a grey plate. On Latte the fill lands back on
+   rather than floating on it as a grey plate. On Light the fill lands back on
    the ground (#eff1f5) and only the rim reads — the same behaviour as the
    sidebar sheet there, so do not "fix" it by inventing a darker fill.
    NO backdrop-filter: a block in the transcript FLOW has nothing but the
@@ -792,7 +792,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
    second blur would cost paint time for no visible pixel.
 
    Two ladders, because "raised" flips with the scheme: dark flavours step UP
-   (surface0 above the panel's layer-1 fill), Latte steps DOWN (bluish-60 is
+   (surface0 above the panel's layer-1 fill), Light steps DOWN (bluish-60 is
    darker than the page). The steps below are exactly the ones each alias
    already names — keep them in sync if the alias layer ever moves. */
 [data-dsh-glass] [data-dsh-glass-settings] {
@@ -812,7 +812,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
     var(--dsw-static-neutral-bluish-850) var(--dsh-glass-settings-soft), transparent);
 }
 
-/* Latte: same five roles, read from the light end of the ladder (bluish-60 is
+/* Light: same five roles, read from the light end of the ladder (bluish-60 is
    what the alias names there, and "raised" means one step darker than the
    panel the light glass fills with). */
 [data-dsh-glass] body:not([data-ds-dark-theme]) [data-dsh-glass-settings] {
@@ -848,7 +848,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
    `padding-top: calc(28px + var(--dsh-frame-top-clearance, 0px))`. The card
    recipe replaced that padding with 10px and drew a rim, so the toolbar
    ended up 11px from the card's top edge against 29px from its bottom one —
-   measured on the live GUI (mocha + mica, 1440x900@2x): card y 12..84,
+   measured on the live GUI (night + mica, 1440x900@2x): card y 12..84,
    toolbar y 23..55. The asymmetry is stock geometry (the title block is
    52px tall, the toolbar 32px, so `align-items: flex-start` always leaves
    20px below it); what the glass added was the VISIBLE rim that turned that
@@ -1022,7 +1022,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
   margin: var(--dsh-glass-gap, 12px);
   padding: 10px 12px 14px;
   /* Border uniform on all four sides (issue #22). The right edge used to be
-     overridden with the accent at 40% ("luminous right edge"): in Latte that
+     overridden with the accent at 40% ("luminous right edge"): in Light that
      read as a stray half-frame — the other three edges' 18% ink rim measures
      (210,212,220) against the (238,240,244) ground (invisible at 1x), while
      the right edge measured (155,186,245), and the corner arcs blend the two
@@ -1033,7 +1033,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
      the decision was to soften the outline rather than un-float the card (the
      alternatives — no rim, flush under the titlebar, no floating at all — were
      rendered and compared first; the sheet is `.debug/ui-adapt/out/combo-CB-*`).
-     Measured on the live page (mocha, mica): the rendered rim pixel went
+     Measured on the live page (night, mica): the rendered rim pixel went
      rgb(73,78,98) → rgb(51,52,67) once the glows were gone and the rim came off
      the base step. Every OTHER rim consumer keeps `--dsh-glass-rim`. */
   border: 1px solid var(--dsh-glass-rim-soft);
@@ -1081,7 +1081,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
    ingredients, so no colour is invented (rules 1/4): the sheet's fill mixed
    into the wash's 0% stop — the ground directly under the caption — which is
    exactly what the card composites to at its top edge. Verified on the live
-   layout (Mocha / mica / frost 20, desktop marker simulated): the probe's
+   layout (Night / mica / frost 20, desktop marker simulated): the probe's
    computed colour becomes rgb(21,21,33), the shell's canvas conversion yields
    rgba(21, 21, 33, 1), and the caption matches the card's top edge (delta 0)
    where it used to differ by 4.
@@ -1093,7 +1093,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
    column re-declares the token as `transparent` for its own subtree, so the
    card is untouched.
    Same token, three other consumers outside the sidebar column, all now on
-   the mica sidebar tone instead of mantle (measured delta (3,3,4) on Mocha,
+   the mica sidebar tone instead of mantle (measured delta (3,3,4) on Night,
    i.e. the same step the caption gains): the trajectory table header, the
    schedule notice chip and the session-list bottom fade. Anything INSIDE the
    sidebar column keeps the `transparent` release. The opt-in ground glows
@@ -1296,18 +1296,18 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
    selected colour — and the app's OWN panel rows are the answer:
    `panelRow.panelActive { background: var(--dsw-alias-interactive-bg-hover) }`
    (dsh-client-ui-sidebar, read from the 0.2.0 bundle). The skin now rides
-   that exact token — the Latte row composites to (227,230,236), the「插件」
+   that exact token — the Light row composites to (227,230,236), the「插件」
    pill the reporter measured is (227,230,235), Δ ≤ 1. Selected == hover,
    which is upstream's own convention for both the panel rows and the session
    list. (The retired 40% boost of the selected-nav token and its AA-ceiling
    note are obsolete: the new fill is ~6% instead of 40%, so the 12px
    timestamp's AA margin only grows.)
    The row title (14px `label-primary`) measures 5.89 / 8.29 / 10.07 / 11.38
-   across the four flavours (injected A/B on the live GUI, 2026-09-18).
+   across the three flavours (injected A/B on the live GUI, 2026-09-18).
    Locator history (2026-10-07 → 2026-10-13): the old `inset bar + brand
    glow`, then a 1px inner ring (removed by issue #22 c3), then 40% + glow —
    now ALL of them are gone (glow removal = maintainer call 2026-10-13: it
-   was never a stroke, but in Latte it read as a shadow frame around the
+   was never a stroke, but in Light it read as a shadow frame around the
    row). The fill locates alone — no blur, no backdrop read, no box-shadow,
    pure alpha, so the off-state (glass off = stock upstream) is untouched.
    ---------- */
@@ -1346,7 +1346,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
    Painting nothing on the surface itself keeps this clear of the issue #19
    backdrop-root shape: a filter on the container would become the plane's
    root and would starve nested submenus' backdrops. Round 3 (②a, 2026-10-13):
-   the 1px outline that used to ride this seat is gone — in Latte it read as
+   the 1px outline that used to ride this seat is gone — in Light it read as
    a solid frame around the popup; the surface now separates by its fill +
    upstream's own elevation (CDP-checked on the reporter's config). The
    `:not(:focus-visible)` scope stays so the shared focus-ring contract does
@@ -1357,7 +1357,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
 }
 
 /* ---------- Menu rim, DARK SCHEMES ONLY (2026-10-19 frame-language audit ⑦).
-   Round 3 (②a) took the 1px rim off this seat because in LATTE it read as a
+   Round 3 (②a) took the 1px rim off this seat because in LIGHT it read as a
    solid frame pinching the provider names — that evidence still stands, so the
    light schemes stay un-stroked. But dropping it EVERYWHERE left the two
    floating layers disagreeing: the modal dialog keeps `--dsh-glass-rim`, the
@@ -1519,7 +1519,7 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
    [data-composer-card] in DSH 0.1.2-rc.1 and 0.1.5-rc.2), so it painted no
    pixel while reading like the glass owned that colour — and had it ever
    matched, `label-primary` at 45% is a 2.1:1 wash on a light sheet (fine only
-   on dark flavours). Caption is already scheme-adaptive (Latte #7c7f93 on
+   on dark flavours). Caption is already scheme-adaptive (Light #7c7f93 on
    #eff1f5 = 3.5:1); the official light theme's own #adb2b8 on white = 2.1:1 is
    upstream's call, not ours to repaint. */
 
@@ -1671,8 +1671,8 @@ html[data-dsh-glass-float] [data-turn-trigger]:hover {
      box-shadow would clobber the host's own elevation — `outline` touches
      neither, so "the stock layout stays byte-for-byte" still holds.
      `:focus-visible` is excluded so the shared focus ring (below) keeps winning.
-   - the rim is what carries the material in Latte: there
-     `--dsw-alias-bg-layer-1` === `--dsw-alias-bg-base` (official Catppuccin
+   - the rim is what carries the material in Light: there
+     `--dsw-alias-bg-layer-1` === `--dsw-alias-bg-base` (upstream adapter
      mapping), so the fill mixes to the page ground and is invisible on its own;
      the dark flavours get both. Same trap PP hit with `--dsh-glass-card*`.
    No new `backdrop-filter` here — see the blur budget note under the bubbles.

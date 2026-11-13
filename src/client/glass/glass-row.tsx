@@ -1,5 +1,5 @@
 /**
- * Catppuccin glass settings row — the second row of the plugin's own settings
+ * TokyoNight glass settings row — the second row of the plugin's own settings
  * page (issue #27) and of the plugin detail card. Holds the master on/off
  * switch plus every glass knob: mode (mica / compatibility), blur, frost and
  * backdrop brightness. Every write goes straight through to the glass layer,
@@ -17,7 +17,7 @@ import { Button, SegmentedControl, Switch } from '@deepseek-ai/dsh-client-ui-pri
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { SETTINGS_DEFAULTS, type GlassRowState } from './glass-layer.ts'
 import { GLASS_GAP_MAX, GLASS_GAP_MIN, GLOW_SIZE_MAX, GLOW_SIZE_MIN, GLOW_STRENGTH_MAX } from '../../state.ts'
-import type { CatppuccinKey } from '../locales.ts'
+import type { TokyoNightKey } from '../locales.ts'
 import { HelpBadge } from '../HelpBadge.tsx'
 import css from './GlassRow.module.css'
 import rowCss from '../settings-row.module.css'
@@ -59,7 +59,7 @@ export interface GlassRowInjected {
 }
 
 /** Full component props: runtime share + locale seat + injected face. */
-export type GlassRowProps = PropsRuntime<'settings.general.item'> & PropsLocale<'catppuccin'> & GlassRowInjected
+export type GlassRowProps = PropsRuntime<'settings.general.item'> & PropsLocale<'tokyonight'> & GlassRowInjected
 
 /** Number formatting for the value box: no float noise from the 0.5 step. */
 const formatValue = (value: number): string => String(Math.round(value * 100) / 100)
@@ -158,7 +158,7 @@ function Knob(props: {
  *  through the existing setters (the debounced persist coalesces the burst
  *  into one Host write). Brightness stays neutral (50) so every preset works
  *  in both schemes; the knobs remain for fine tuning. */
-const GLASS_PRESETS: readonly { id: string; key: CatppuccinKey; blur: number; frost: number; brightness: number }[] = [
+const GLASS_PRESETS: readonly { id: string; key: TokyoNightKey; blur: number; frost: number; brightness: number }[] = [
   { id: 'clear', key: 'glass.presetClear', blur: 0, frost: 8, brightness: 50 },
   { id: 'standard', key: 'glass.presetStandard', blur: SETTINGS_DEFAULTS.blur, frost: SETTINGS_DEFAULTS.frost, brightness: SETTINGS_DEFAULTS.brightness },
   { id: 'frosted', key: 'glass.presetFrosted', blur: 12, frost: 45, brightness: 50 },
@@ -171,7 +171,7 @@ const GLASS_PRESETS: readonly { id: string; key: CatppuccinKey; blur: number; fr
  * flip the material row to "custom" for no reason. The three tiers sit inside
  * the knob's 4-24 range; the slider stays for anything in between.
  */
-const GAP_PRESETS: readonly { id: string; key: CatppuccinKey; gap: number }[] = [
+const GAP_PRESETS: readonly { id: string; key: TokyoNightKey; gap: number }[] = [
   { id: 'compact', key: 'glass.gapCompact', gap: 8 },
   { id: 'standard', key: 'glass.gapStandard', gap: SETTINGS_DEFAULTS.gap },
   { id: 'loose', key: 'glass.gapLoose', gap: 20 },
@@ -201,7 +201,7 @@ export function GlassRow({ t, getState, subscribe, setEnabled, setMode, setBlur,
   const activeGapPreset = GAP_PRESETS.find((p) => p.gap === gap)?.id ?? ''
 
   return (
-    <div className={rowCss.row} data-catppuccin-row="glass">
+    <div className={rowCss.row} data-tokyonight-row="glass">
       <div className={rowCss.title}>
         {t('glass.title')}
         <HelpBadge label={t('glass.helpLabel')} help={t('glass.help')} />
@@ -217,7 +217,7 @@ export function GlassRow({ t, getState, subscribe, setEnabled, setMode, setBlur,
             <div className={css.row}>
               <span className={css.rowLabel}>{t('glass.mode')}</span>
               <SegmentedControl
-                id="catppuccin-glass-mode"
+                id="tokyonight-glass-mode"
                 label={t('glass.mode')}
                 value={mode}
                 options={[

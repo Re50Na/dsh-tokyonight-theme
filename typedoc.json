@@ -1,6 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "name": "@nonamelego/dsh-catppuccin",
+  "name": "dsh-tokyonight-theme",
   "entryPoints": [
     "src/client/index.ts",
     "src/state.ts",

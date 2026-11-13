@@ -1,8 +1,8 @@
 """Combine theme screenshots into slanted-split preview images.
 
 Produces two composite images:
-  combined.png        — 4 flavours (latte, frappe, macchiato, mocha)
-  glass-combined.png  — 2 glass-mode flavours (glass-latte, glass-mocha)
+  combined.png        — 3 flavours (light, storm, night)
+  glass-combined.png  — 2 glass-mode flavours (glass-light, glass-night)
 
 Each pixel is taken from exactly one source image. The boundary between
 adjacent strips is a diagonal line from top-right to bottom-left, shifted
@@ -57,13 +57,13 @@ def main() -> None:
 
     print("→ 4-flavour combined preview …")
     combine_slanted(
-        ["latte.png", "frappe.png", "macchiato.png", "mocha.png"],
+        ["light.png", "storm.png", "night.png"],
         "combined.png",
     )
 
     print("→ 2-flavour glass combined preview …")
     combine_slanted(
-        ["glass-latte.png", "glass-mocha.png"],
+        ["glass-light.png", "glass-night.png"],
         "glass-combined.png",
     )
 

@@ -1,29 +1,29 @@
 /**
- * TUI theme-sync half of the Catppuccin theme plugin.
+ * TUI theme-sync half of the TokyoNight theme plugin.
  *
  * dsh-TUI has no theme registration API — custom themes are only ever read
  * from `~/.dsh-tui/themes/<name>.json` (dsh-TUI src/customTheme.ts, DATA_DIR
  * is fixed to `~/.dsh-tui` with no env override). So the "install-command"
  * experience for the TUI surface is this tiny Cordis plugin: it ships as a
- * second bundle row (`@nonamelego/dsh-catppuccin/tui-themes`, no inject,
- * activates in every profile) and idempotently copies the four Catppuccin
+ * second bundle row (`dsh-tokyonight-theme/tui-themes`, no inject,
+ * activates in every profile) and idempotently copies the three TokyoNight
  * theme JSONs from this package into the TUI data dir on activation:
  *
  *   - installed into a dsh-tui profile: themes land on first TUI start —
- *     `dsh plugin --profile dsh-tui add @nonamelego/dsh-catppuccin` is the
+ *     `dsh plugin --profile dsh-tui add dsh-tokyonight-theme` is the
  *     whole install;
  *   - installed into a web/desktop profile of a user who also runs dsh-TUI:
  *     themes stay in sync on every web start, no second install needed;
  *   - no `~/.dsh-tui` on disk (web-only user, headless): strict no-op — the
  *     directory is never created by this plugin.
  *
- * The `catppuccin-*.json` namespace is plugin-owned but user-visible:
+ * The `tokyonight-*.json` namespace is plugin-owned but user-visible:
  * syncing a DRIFTED owned file backs it up to `<name>.json.bak` before
  * writing the shipped copy (item R — the user's customization is never
  * silently swallowed), `preserve` leaves it alone, `overwrite` restores the
  * historical force-sync behavior; other files in the themes directory are
  * never touched. Community/third-party themes (item T) live in the
- * `catppuccin-community/` subdirectory and are synced write-if-missing —
+ * `tokyonight-community/` subdirectory and are synced write-if-missing —
  * existing themes are never overwritten.
  *
  * Best-effort by contract: any failure is swallowed silently — theme sync
@@ -44,11 +44,11 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /** Stable cordis plugin name (matches the cordis.patch.yml row id). */
-export const name = 'dsh-catppuccin-tui-themes'
+export const name = 'dsh-tokyonight-tui-themes'
 
 /** File name shape this plugin owns and syncs. */
 function isOwnedTheme(file: string): boolean {
-  return file.startsWith('catppuccin-') && file.endsWith('.json')
+  return file.startsWith('tokyonight-') && file.endsWith('.json')
 }
 
 /** Sync behavior for an owned file that differs from the shipped copy. */
@@ -73,7 +73,7 @@ export interface SyncTuiThemesOptions {
 }
 
 /**
- * Idempotently copy every `catppuccin-*.json` from `bundledDir` into
+ * Idempotently copy every `tokyonight-*.json` from `bundledDir` into
  * `<tuiHome>/themes/`, then (with a `communityDir`) any missing community
  * JSON. Owned files are compared against the shipped copy and synced on
  * drift according to `onConflict`; nothing outside the owned namespace is
@@ -145,8 +145,8 @@ export function apply(): void {
     const bundledDir = fileURLToPath(new URL('../themes', import.meta.url))
     const tuiHome = join(homedir(), '.dsh-tui')
     syncTuiThemes(bundledDir, tuiHome, {
-      // Community themes: ~/.dsh-tui/themes/catppuccin-community/ (item T).
-      communityDir: join(tuiHome, 'themes', 'catppuccin-community'),
+      // Community themes: ~/.dsh-tui/themes/tokyonight-community/ (item T).
+      communityDir: join(tuiHome, 'themes', 'tokyonight-community'),
     })
   } catch {
     // Best-effort: never disturb profile startup for a theme copy.

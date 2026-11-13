@@ -20,13 +20,13 @@ import rowCss from './settings-row.module.css'
  * current repo name (the pre-rename URL only redirects), and only COMPLETE
  * GitHub URLs use it (AGENTS.md「项目身份速览：三套名字」).
  */
-export const REPO_URL = 'https://github.com/NoNameLeGo/dsh-catppuccin-theme'
+export const REPO_URL = 'https://github.com/Re50Na/dsh-tokyonight-theme'
 
 /** GitHub issue tracker — where feedback lands. */
 export const ISSUES_URL = `${REPO_URL}/issues`
 
 /** Full component props: runtime share + locale seat. No injected face. */
-export type LinksRowProps = PropsRuntime<'settings.general.item'> & PropsLocale<'catppuccin'>
+export type LinksRowProps = PropsRuntime<'settings.general.item'> & PropsLocale<'tokyonight'>
 
 /** The row's links: token-coloured, underlined, quiet. */
 const linkStyle: React.CSSProperties = {
@@ -44,7 +44,7 @@ const linkStyle: React.CSSProperties = {
  */
 export function LinksRow({ t }: LinksRowProps): React.JSX.Element {
   return (
-    <div className={rowCss.row} data-catppuccin-row="links">
+    <div className={rowCss.row} data-tokyonight-row="links">
       <div className={rowCss.title}>{t('links.title')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
         <a href={ISSUES_URL} target="_blank" rel="noreferrer noopener" style={linkStyle}>

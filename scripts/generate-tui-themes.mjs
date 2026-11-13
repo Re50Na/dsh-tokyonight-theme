@@ -1,43 +1,17 @@
 #!/usr/bin/env node
-/**
- * Generate themes/catppuccin-*.json — Catppuccin themes for dsh-TUI
- * (drop into ~/.dsh-tui/themes/, see dsh-TUI docs/themes.md).
- *
- * Input:
- *   - ../../.cache/dsh-ref/catppuccin-palette.json (official Catppuccin palette v1.8.0)
- *
- * Colour plan (all values derive from the official 26-colour palette only):
- *   - Syntax keys: the official @catppuccin/vscode token mapping (keyword =
- *     mauve, string = green, comment = overlay2, number = peach, function =
- *     blue, type/class = yellow, variable = text, operator = teal,
- *     punctuation = overlay2, constant = peach) — same mapping the web half
- *     uses for Shiki (src/client/shiki-tokens.ts).
- *   - Semantic keys: success = green, error = red, warning = yellow,
- *     merged/autoAccept = mauve (dsh-TUI built-ins use violet there).
- *   - Brand/interaction group (claude, permission, suggestion, ide, badge
- *     fills, …): mauve — the official Catppuccin accent (user decision; the
- *     web GUI keeps DeepSeek blue as its brand).
- *   - Derived shades follow the official @catppuccin/vscode conventions:
- *     diff line backgrounds = green/red at 15% alpha, word level 20%,
- *     selection = overlay2 at 25% (latte 30%), hover = surface0 at 50%;
- *     shimmer variants = the base colour blended 30% towards `text` (which
- *     brightens on dark flavours and darkens on latte, matching the
- *     built-in shimmer direction on both bases).
- *   - Rainbow follows the style-guide hues (red, peach, yellow, green, …)
- *     hue-matched onto the seven dsh-TUI slots: indigo = lavender,
- *     violet = mauve.
- *
- * Re-run after editing the mapping below: `node scripts/generate-tui-themes.mjs`
+/** Generate 95-key TUI themes from data/tokyonight-palette.json.
+ * Source colours: TokyoNightPalette.md. Neutral ramps are derived in data/README.md.
+ * GUI, Shiki and TUI share this semantic palette. Run pnpm gen:all.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const REF = join(__dirname, '..', '..', '.cache', 'dsh-ref', 'catppuccin-palette.json')
+const REF = join(__dirname, '..', 'data', 'tokyonight-palette.json')
 const OUT_DIR = join(__dirname, '..', 'themes')
 
-const catppuccin = JSON.parse(readFileSync(REF, 'utf8'))
+const tokyonight = JSON.parse(readFileSync(REF, 'utf8'))
 
 /** All 96 keys of the dsh-TUI Theme type (src/theme.ts), in declaration
  *  order — the loader skips unknown keys, so this doubles as a guard against
@@ -82,7 +56,7 @@ function blend(p, a, b, t) {
   return toHex([ar + (br - ar) * t, ag + (bg - ag) * t, ab + (bb - ab) * t])
 }
 
-/** Official @catppuccin/vscode opacity convention: palette colour + alpha
+/** Adapter opacity convention inherited from the upstream implementation: palette colour + alpha
  *  byte (diff bgs 15%/20%, selection 25%, hover/panel tints 50–60%). */
 function alpha(p, name, ratio) {
   return p[name] + Math.round(ratio * 255).toString(16).padStart(2, '0')
@@ -92,10 +66,10 @@ function alpha(p, name, ratio) {
 
 function buildColors(p, light) {
   // Shimmer = base colour blended 30% towards text: brightens on dark
-  // flavours (text is the light ramp end), darkens on latte (text is ink) —
+  // flavours (text is the light ramp end), darkens on light (text is ink) —
   // the same direction the dsh-TUI built-in shimmers take on each base.
   const shimmer = (name) => blend(p, name, 'text', 0.3)
-  const accent = 'mauve' // official Catppuccin accent; brand/interaction group
+  const accent = 'blue' // Tokyo Night Terminal Blue; brand/interaction group
 
   return {
     autoAccept: p[accent],
@@ -119,7 +93,7 @@ function buildColors(p, light) {
     subtle: p.overlay0,
     suggestion: p[accent],
     remember: p[accent],
-    background: p[accent],
+    background: p.background,
     success: p.green,
     error: p.red,
     warning: p.yellow,
@@ -142,13 +116,13 @@ function buildColors(p, light) {
     toolDotTask: p.pink,
     syntaxKeyword: p[accent],
     syntaxString: p.green,
-    syntaxComment: p.overlay2,
+    syntaxComment: p.comment,
     syntaxNumber: p.peach,
     syntaxFunction: p.blue,
     syntaxType: p.yellow,
-    syntaxVariable: p.text,
+    syntaxVariable: p.syntaxText,
     syntaxOperator: p.teal,
-    syntaxPunctuation: p.overlay2,
+    syntaxPunctuation: p.syntaxText,
     syntaxConstant: p.peach,
     red_FOR_SUBAGENTS_ONLY: p.red,
     blue_FOR_SUBAGENTS_ONLY: p.blue,
@@ -167,7 +141,7 @@ function buildColors(p, light) {
     // validator would warn-and-skip an empty-string override anyway.
     userMessageBackgroundHover: alpha(p, 'surface0', 0.5),
     messageActionsBackground: p.surface0,
-    // Official vscode selectionBackground convention (overlay2 @ 25%, latte 30%).
+    // Official vscode selectionBackground convention (overlay2 @ 25%, light 30%).
     selectionBg: alpha(p, 'overlay2', light ? 0.3 : 0.25),
     bashMessageBackgroundColor: alpha(p, 'surface0', 0.6),
     memoryBackgroundColor: alpha(p, 'surface0', 0.6),
@@ -205,10 +179,9 @@ function buildColors(p, light) {
 /* --------------------------------- emit ---------------------------------- */
 
 const FLAVORS = [
-  { id: 'latte', label: 'Latte', base: 'light' },
-  { id: 'frappe', label: 'Frappé', base: 'dark' },
-  { id: 'macchiato', label: 'Macchiato', base: 'dark' },
-  { id: 'mocha', label: 'Mocha', base: 'dark' },
+  { id: 'light', label: 'Light', base: 'light' },
+  { id: 'storm', label: 'Storm', base: 'dark' },
+  { id: 'night', label: 'Night', base: 'dark' },
 ]
 
 const HEX_VALUE = /^(?:#[0-9a-f]{6}(?:[0-9a-f]{2})?|)$/
@@ -216,7 +189,7 @@ const HEX_VALUE = /^(?:#[0-9a-f]{6}(?:[0-9a-f]{2})?|)$/
 mkdirSync(OUT_DIR, { recursive: true })
 for (const { id, label, base } of FLAVORS) {
   const palette = Object.fromEntries(
-    Object.entries(catppuccin[id].colors).map(([name, col]) => [name, col.hex]),
+    Object.entries(tokyonight[id].colors).map(([name, col]) => [name, col.hex]),
   )
   const colors = buildColors(palette, base === 'light')
 
@@ -236,11 +209,11 @@ for (const { id, label, base } of FLAVORS) {
     if (!HEX_VALUE.test(value)) throw new Error(`${id}: bad value for ${key}: ${value}`)
   }
 
-  const file = join(OUT_DIR, `catppuccin-${id}.json`)
+  const file = join(OUT_DIR, `tokyonight-${id}.json`)
   writeFileSync(
     file,
     `${JSON.stringify(
-      { name: `catppuccin-${id}`, displayName: `Catppuccin ${label}`, base, colors },
+      { name: `tokyonight-${id}`, displayName: `TokyoNight ${label}`, base, colors },
       null,
       2,
     )}\n`,

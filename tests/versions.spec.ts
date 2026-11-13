@@ -9,7 +9,6 @@
  */
 import { describe, expect, it } from 'vitest'
 import { compareVersions, isUpdateAvailable, parseVersion } from '../src/versions.ts'
-import { selectNewest, updateCommandFor } from '../src/update-check.ts'
 
 describe('parseVersion', () => {
   it('parses stable versions', () => {
@@ -80,47 +79,5 @@ describe('isUpdateAvailable', () => {
 
   it('never reports an update from garbage current', () => {
     expect(isUpdateAvailable('weird-local', '9.9.9')).toBe(false)
-  })
-})
-
-describe('selectNewest', () => {
-  const tags = { latest: '0.2.4', beta: '0.2.5-beta.1' }
-
-  it('a stable install only chases the latest tag', () => {
-    expect(selectNewest('0.2.4', tags)).toEqual({ version: '0.2.4', channel: 'latest' })
-    // A stable user never chases the beta channel, even when beta outranks latest.
-    expect(selectNewest('0.2.4', { latest: '0.2.4', beta: '0.3.0-beta.1' }))
-      .toEqual({ version: '0.2.4', channel: 'latest' })
-  })
-
-  it('a prerelease install chases both channels and picks the newest', () => {
-    expect(selectNewest('0.2.5-beta.1', tags)).toEqual({ version: '0.2.5-beta.1', channel: 'beta' })
-    expect(selectNewest('0.2.5-beta.0', tags)).toEqual({ version: '0.2.5-beta.1', channel: 'beta' })
-    // A stable release that outranks the prerelease promotes via latest.
-    expect(selectNewest('0.2.5-beta.1', { latest: '0.2.5', beta: '0.2.5-beta.1' }))
-      .toEqual({ version: '0.2.5', channel: 'latest' })
-  })
-
-  it('falls back to whichever tag exists', () => {
-    expect(selectNewest('0.2.4', { latest: '0.2.4' })).toEqual({ version: '0.2.4', channel: 'latest' })
-    expect(selectNewest('0.2.5-beta.1', { beta: '0.2.5-beta.2' }))
-      .toEqual({ version: '0.2.5-beta.2', channel: 'beta' })
-  })
-
-  it('returns null when no tag applies', () => {
-    expect(selectNewest('0.2.4', {})).toBeNull()
-    // A stable install never chases a lone beta tag.
-    expect(selectNewest('0.2.4', { beta: '0.2.5-beta.1' })).toBeNull()
-    // An equal beta candidate still applies (the caller reports "up to date").
-    expect(selectNewest('0.2.5-beta.1', { beta: '0.2.5-beta.1' }))
-      .toEqual({ version: '0.2.5-beta.1', channel: 'beta' })
-  })
-})
-
-describe('updateCommandFor', () => {
-  it('names the dist-tag being chased and the target profile', () => {
-    expect(updateCommandFor('latest', 'web')).toBe('dsh plugin --profile web add @nonamelego/dsh-catppuccin@latest')
-    expect(updateCommandFor('beta', 'web')).toBe('dsh plugin --profile web add @nonamelego/dsh-catppuccin@beta')
-    expect(updateCommandFor('latest', 'headless')).toBe('dsh plugin --profile headless add @nonamelego/dsh-catppuccin@latest')
   })
 })

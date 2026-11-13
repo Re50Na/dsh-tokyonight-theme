@@ -1,12 +1,12 @@
-// Regenerate the Catppuccin preview screenshots from the LIVE DeepSeek
+// Regenerate the TokyoNight preview screenshots from the LIVE DeepSeek
 // Harness web GUI (http://127.0.0.1:3080). For each flavour it opens
-// Settings > General (the Catppuccin row), clicks the flavour, asserts the
+// Settings > General (the TokyoNight row), clicks the flavour, asserts the
 // theme actually applied (base colour token + color-scheme), and saves a
-// screenshot. Ends with a hero shot of the main view under Mocha, then
+// screenshot. Ends with a hero shot of the main view under Night, then
 // restores whatever flavour preference the user actually had.
 //
-// The glass skin is forced OFF for these four shots: they document the PURE
-// theme, and the glass skin has its own previews (`glass-latte` / `glass-mocha`,
+// The glass skin is forced OFF for these three shots: they document the PURE
+// theme, and the glass skin has its own previews (`glass-light` / `glass-night`,
 // from scripts/screenshot-glass.cjs). The script used to inherit whatever glass
 // state the machine happened to have — on 2026-10-04 that produced four
 // "flavour" previews shot with Mica mode on, i.e. duplicating the glass shots.
@@ -25,7 +25,7 @@
 //
 // NOTE (2026-10-04): Playwright cannot launch a browser on this machine — Node
 // is barred from spawning children (EBUSY even for cmd.exe), so `chromium.launch()`
-// fails. The four flavour shots were re-taken through CDP against a manually
+// fails. The three flavour shots were re-taken through CDP against a manually
 // started headless Chrome; see the `dsh-preview-shots-cdp` skill.
 const { chromium } = require('playwright')
 const fs = require('fs')
@@ -57,16 +57,15 @@ fs.mkdirSync(OUT, { recursive: true })
 
 // Expected computed `--dsw-alias-bg-base` per flavour (alias layer resolves
 // to the static step: light -> bluish-00 (base), dark -> bluish-950 (crust)).
-const BASE = { latte: '#eff1f5', frappe: '#232634', macchiato: '#181926', mocha: '#11111b' }
+const BASE = { light: '#e6e7ed', storm: '#24283b', night: '#1a1b26' }
 const FLAVORS = [
-  { name: 'latte', label: 'Latte' },
-  { name: 'frappe', label: 'Frappé' },
-  { name: 'macchiato', label: 'Macchiato' },
-  { name: 'mocha', label: 'Mocha' },
+  { name: 'light', label: 'Light' },
+  { name: 'storm', label: 'Storm' },
+  { name: 'night', label: 'Night' },
 ]
 
 /** Button label as rendered -> expected base (null = follow-system / off). */
-const LABEL_BASE = { Latte: BASE.latte, Frappé: BASE.frappe, Macchiato: BASE.macchiato, Mocha: BASE.mocha, 跟随系统: null }
+const LABEL_BASE = { Light: BASE.light, Storm: BASE.storm, Night: BASE.night, 跟随系统: null }
 
 function findChromiumExe() {
   const cache = path.join(process.env.LOCALAPPDATA, 'ms-playwright')
@@ -105,16 +104,16 @@ async function probeTheme(page) {
   })
 }
 
-/** The Catppuccin row: the innermost element that holds the flavour buttons.
+/** The TokyoNight row: the innermost element that holds the flavour buttons.
  *  Scoping matters twice — (1) the dialog has its own "跟随系统" in the
  *  appearance segmented control (a `_8HJdBW_themeCube` button earlier in the
  *  DOM), so an un-scoped `.first()` restores the wrong control and strict mode
  *  throws; (2) the row title is followed by the "?" help badge (item J), so
- *  `getByText('Catppuccin 主题', { exact: true })` matches **nothing** since
+ *  `getByText('TokyoNight 主题', { exact: true })` matches **nothing** since
  *  then. `[data-slot='settings.general.item']` is too coarse — an outer wrapper
  *  carries that slot too and still contains the appearance row. */
-function catppuccinRow(page) {
-  return page.locator('div', { has: page.getByRole('button', { name: 'Latte' }) }).last()
+function tokyonightRow(page) {
+  return page.locator('div', { has: page.getByRole('button', { name: 'Light' }) }).last()
 }
 
 async function openSettings(page) {
@@ -134,7 +133,7 @@ async function openSettings(page) {
   }
   await page.waitForTimeout(1500)
   // Settings opens on the General section by default; make sure the row is in view.
-  const row = catppuccinRow(page)
+  const row = tokyonightRow(page)
   await row.waitFor({ timeout: 15000 })
   await row.scrollIntoViewIfNeeded()
   await page.waitForTimeout(500)
@@ -142,7 +141,7 @@ async function openSettings(page) {
 
 async function closeSettings(page) {
   // The modal's mask dims the whole page (measured 2026-09-21: the sidebar read
-  // (182,183,186) instead of Latte's #eff1f5), so every preview must be shot with
+  // (182,183,186) instead of Light's #eff1f5), so every preview must be shot with
   // the dialog CLOSED. Click the dialog's own close button, fall back to Escape,
   // and fail loudly if it is still there — a dimmed preview is worse than no shot.
   const dialog = page.locator("[role='dialog'][aria-modal='true']")
@@ -156,7 +155,7 @@ async function closeSettings(page) {
 }
 
 async function pickFlavor(page, label, expectedBase) {
-  const button = catppuccinRow(page).getByRole('button', { name: label })
+  const button = tokyonightRow(page).getByRole('button', { name: label })
   await button.click()
   // 主动轮询直到 CSS token 生效，不依赖固定等待时间
   if (expectedBase) {
@@ -220,13 +219,13 @@ async function setGlass(page, enabled) {
   }
 
   await openSettings(page)
-  console.log('settings open, Catppuccin row visible')
+  console.log('settings open, TokyoNight row visible')
 
   // Remember the user's actual selection and restore THAT at the end. Restoring
-  // "跟随系统" unconditionally would silently drop a `catppuccin-latte` choice —
+  // "跟随系统" unconditionally would silently drop a `tokyonight-light` choice —
   // this machine's settings.yaml has exactly that. The button's text is the
   // label plus its subtitle line, so take the first line.
-  const originalLabel = (await catppuccinRow(page).locator("button[aria-pressed='true']").first().innerText())
+  const originalLabel = (await tokyonightRow(page).locator("button[aria-pressed='true']").first().innerText())
     .split('\n')[0]
     .trim()
   console.log('original flavour preference:', originalLabel)
@@ -251,16 +250,16 @@ async function setGlass(page, enabled) {
     await openSettings(page)
   }
 
-  // Hero shot: main view under Mocha.
-  await pickFlavor(page, 'Mocha', BASE.mocha) // ensure mocha is the active flavour
+  // Hero shot: main view under Night.
+  await pickFlavor(page, 'Night', BASE.night) // ensure night is the active flavour
   await closeSettings(page)
   await page.waitForTimeout(1500)
-  await shot(page, 'hero-mocha.png')
+  await shot(page, 'hero-night.png')
 
   // Restore the original preference, then give the debounced durable persist
   // (300ms) time to reach the settings document — closing the browser right after
   // the click leaves the live UI on the old flavour while settings.yaml keeps the
-  // preview flavour (measured 2026-09-18: doc still said catppuccin-mocha).
+  // preview flavour (measured 2026-09-18: doc still said tokyonight-night).
   await openSettings(page)
   await pickFlavor(page, originalLabel, LABEL_BASE[originalLabel] ?? null)
   await page.waitForTimeout(2500)

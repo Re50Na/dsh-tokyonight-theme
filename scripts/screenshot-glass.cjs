@@ -1,4 +1,4 @@
-// Regenerate the Catppuccin GLASS preview screenshots from the LIVE DeepSeek
+// Regenerate the TokyoNight GLASS preview screenshots from the LIVE DeepSeek
 // Harness web GUI (http://127.0.0.1:3080), using a FRESH session so the frame
 // shows no personal data:
 //
@@ -7,21 +7,21 @@
 //   - the sidebar is collapsed (hides the workspace switcher / session list)
 //   - the right details drawer is closed
 //   - a demo message is sent to the model (a short code snippet) so the
-//     preview also shows Catppuccin's syntax-highlight palette
+//     preview also shows TokyoNight's syntax-highlight palette
 //
-// Then it picks a theme (Latte then Mocha), asserts the flavour token actually
+// Then it picks a theme (Light then Night), asserts the flavour token actually
 // applied, enables the glass layer (settings → 玻璃质感 → 总开关), closes
 // settings and captures the frosted view. Ends by restoring the original
 // preference (glass off, follow system).
 //
 // This machine also runs skin-center/Aqua plugins which append inline
 // --dsw-alias-*/--dsw-specific-* overrides to <body> AFTER the theme runtime
-// applies the Catppuccin tokens, masking them with the DSH default palette.
-// To capture a pure Catppuccin look the script strips those inline overrides
-// (the registered Catppuccin tokens then resolve to their real values) and
+// applies the TokyoNight tokens, masking them with the DSH default palette.
+// To capture a pure TokyoNight look the script strips those inline overrides
+// (the registered TokyoNight tokens then resolve to their real values) and
 // asserts the computed background equals the exact flavour base. The DSH
 // full-viewport radial-gradient glow on the app root is cleared too (kept
-// element, background removed) so the frame is a pure Catppuccin render.
+// element, background removed) so the frame is a pure TokyoNight render.
 //
 // Requires the global @playwright/cli installation (and its cached Chromium):
 //   npm i -g @playwright/cli
@@ -35,11 +35,11 @@ const path = require('path')
 const OUT = path.join(__dirname, '..', 'assets', 'previews')
 fs.mkdirSync(OUT, { recursive: true })
 
-// Expected computed body background per flavour (Catppuccin base colour).
-const BASE = { latte: '#eff1f5', mocha: '#11111b' }
+// Expected computed body background per flavour (TokyoNight base colour).
+const BASE = { light: '#e6e7ed', night: '#1a1b26' }
 
 // The demo message sent into the fresh session (kept short so the reply
-// finishes fast; the code block shows the Catppuccin syntax palette).
+// finishes fast; the code block shows the TokyoNight syntax palette).
 const DEMO = 'Write a short Python quicksort function with type hints, a docstring and comments. Keep it concise.'
 
 function findChromiumExe() {
@@ -73,7 +73,7 @@ async function probeTheme(page) {
   })
 }
 
-const RGB_BASE = { latte: 'rgb(239, 241, 245)', mocha: 'rgb(17, 17, 27)' }
+const RGB_BASE = { light: 'rgb(239, 241, 245)', night: 'rgb(17, 17, 27)' }
 
 /** Normalise a CSS colour string to `rgb(r, g, b)` (handles hex and color(srgb …)). */
 function normalizeColor(c) {
@@ -86,8 +86,8 @@ function normalizeColor(c) {
 /**
  * Strip inline alias/specific overrides (keys starting with --dsw-alias /
  * --dsw-specific) that skin-center/Aqua appended to <body> after the theme
- * runtime applied the Catppuccin tokens. Removing them lets the
- * Catppuccin-registered tokens resolve to their real values. Also strips the
+ * runtime applied the TokyoNight tokens. Removing them lets the
+ * TokyoNight-registered tokens resolve to their real values. Also strips the
  * skin-center/aqua activation attributes and variables on <html>. Retries
  * until the override stays gone (the skin plugin may re-inject on events).
  */
@@ -119,7 +119,7 @@ async function decontaminateBody(page, expectedRgb) {
 }
 
 /**
- * Neutralise ambient backdrop layers that would tint the pure Catppuccin
+ * Neutralise ambient backdrop layers that would tint the pure TokyoNight
  * render: the DSH full-viewport radial-gradient glow on the app root and
  * fullscreen background canvases (particle / wall art). These are environment
  * effects from the host app / other plugins. CAREFUL: the full-viewport
@@ -164,7 +164,7 @@ async function openSettings(page) {
     })
   }
   await page.waitForTimeout(1500)
-  const row = page.getByText('Catppuccin 主题', { exact: true }).first()
+  const row = page.getByText('TokyoNight 主题', { exact: true }).first()
   await row.waitFor({ timeout: 15000 })
   await row.scrollIntoViewIfNeeded()
   await page.waitForTimeout(500)
@@ -209,7 +209,7 @@ async function closeSettings(page) {
   }
   await page.keyboard.press('Escape')
   await page.waitForTimeout(600)
-  if (await page.getByText('Catppuccin 主题', { exact: true }).first().isVisible().catch(() => false)) {
+  if (await page.getByText('TokyoNight 主题', { exact: true }).first().isVisible().catch(() => false)) {
     await page.evaluate(() => {
       const mask = document.querySelector('[class*="mask"]')
       if (mask) mask.click()
@@ -290,7 +290,7 @@ async function sendDemoMessage(page) {
 }
 
 /** Scroll the first code block into the centre of the viewport so the shot
- *  shows the Catppuccin syntax palette (does nothing when no code is found). */
+ *  shows the TokyoNight syntax palette (does nothing when no code is found). */
 async function scrollCodeIntoView(page) {
   await page.evaluate(() => {
     const code = document.querySelector('pre, [class*="md-code"], [class*="shiki"]')
@@ -335,50 +335,50 @@ async function assertContentInView(page, label) {
   }))
   console.log('pre-state:', JSON.stringify(preShotState))
 
-  // --- Latte + glass ---
+  // --- Light + glass ---
   await openSettings(page)
-  await pickFlavor(page, 'Latte')
-  await decontaminateBody(page, RGB_BASE.latte)
+  await pickFlavor(page, 'Light')
+  await decontaminateBody(page, RGB_BASE.light)
   let t = await probeTheme(page)
-  console.log(`Latte: colorScheme=${t.colorScheme} bodyColor=${t.bodyColor} applied=${normalizeColor(t.bodyColor) === RGB_BASE.latte}`)
-  if (normalizeColor(t.bodyColor) !== RGB_BASE.latte) throw new Error(`Latte did not apply cleanly (${t.bodyColor})`)
+  console.log(`Light: colorScheme=${t.colorScheme} bodyColor=${t.bodyColor} applied=${normalizeColor(t.bodyColor) === RGB_BASE.light}`)
+  if (normalizeColor(t.bodyColor) !== RGB_BASE.light) throw new Error(`Light did not apply cleanly (${t.bodyColor})`)
   await setGlass(page, true)
   t = await probeTheme(page)
   console.log('glass after enable:', JSON.stringify(t.glass))
   if (!t.glass.attr) throw new Error('glass attribute missing after enabling')
   await closeSettings(page)
-  await decontaminateBody(page, RGB_BASE.latte)
+  await decontaminateBody(page, RGB_BASE.light)
   await clearAmbientLayers(page)
   await collapseSidebar(page)
   await scrollCodeIntoView(page)
-  await assertContentInView(page, 'latte')
+  await assertContentInView(page, 'light')
   const final1 = await probeTheme(page)
-  console.log('pre-shot latte:', JSON.stringify(final1))
-  const p1 = path.join(OUT, 'glass-latte.png')
+  console.log('pre-shot light:', JSON.stringify(final1))
+  const p1 = path.join(OUT, 'glass-light.png')
   await page.screenshot({ path: p1, fullPage: false })
   console.log('saved', path.relative(path.join(__dirname, '..'), p1))
 
-  // --- Mocha + glass (same fresh conversation) ---
+  // --- Night + glass (same fresh conversation) ---
   await openSettings(page)
-  await pickFlavor(page, 'Mocha')
-  await decontaminateBody(page, RGB_BASE.mocha)
+  await pickFlavor(page, 'Night')
+  await decontaminateBody(page, RGB_BASE.night)
   t = await probeTheme(page)
-  console.log(`Mocha: colorScheme=${t.colorScheme} bodyColor=${t.bodyColor} applied=${normalizeColor(t.bodyColor) === RGB_BASE.mocha}`)
-  if (normalizeColor(t.bodyColor) !== RGB_BASE.mocha) throw new Error(`Mocha did not apply cleanly (${t.bodyColor})`)
+  console.log(`Night: colorScheme=${t.colorScheme} bodyColor=${t.bodyColor} applied=${normalizeColor(t.bodyColor) === RGB_BASE.night}`)
+  if (normalizeColor(t.bodyColor) !== RGB_BASE.night) throw new Error(`Night did not apply cleanly (${t.bodyColor})`)
   await setGlass(page, true) // idempotent keep-on
   await closeSettings(page)
-  await decontaminateBody(page, RGB_BASE.mocha)
+  await decontaminateBody(page, RGB_BASE.night)
   await clearAmbientLayers(page)
   await collapseSidebar(page)
   await scrollCodeIntoView(page)
-  await assertContentInView(page, 'mocha')
+  await assertContentInView(page, 'night')
   const final2 = await probeTheme(page)
-  console.log('pre-shot mocha:', JSON.stringify(final2))
-  const p2 = path.join(OUT, 'glass-mocha.png')
+  console.log('pre-shot night:', JSON.stringify(final2))
+  const p2 = path.join(OUT, 'glass-night.png')
   await page.screenshot({ path: p2, fullPage: false })
   console.log('saved', path.relative(path.join(__dirname, '..'), p2))
 
-  // --- restore: glass off, follow system (Catppuccin row's own "跟随系统") ---
+  // --- restore: glass off, follow system (TokyoNight row's own "跟随系统") ---
   await openSettings(page)
   await setGlass(page, false)
   await page.getByText('跟随系统', { exact: true }).last().click()

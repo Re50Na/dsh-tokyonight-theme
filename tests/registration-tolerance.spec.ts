@@ -188,15 +188,15 @@ describe('issue #23: theme registration survives an id owned elsewhere', () => {
   it('a pre-owned flavour id skips registration but the flavour still applies', async () => {
     const theme = makeTheme()
     // The peer's instance already registered the flavour id…
-    theme.themes.push({ id: 'catppuccin-latte', colorScheme: 'light', tokens: {} })
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    theme.themes.push({ id: 'tokyonight-light', colorScheme: 'light', tokens: {} })
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
 
     const { ctx } = mount({ theme })
     // …let the deferred restore (microtask) run. Pre-fix, `ensureThemeRegistered`
     // threw there as an uncaught error; now the skip falls through to setTheme.
     await new Promise((resolve) => setTimeout(resolve, 10))
 
-    expect(theme.preference).toBe('catppuccin-latte')
+    expect(theme.preference).toBe('tokyonight-light')
     await ctx.fiber.dispose()
   })
 })

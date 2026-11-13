@@ -1,6 +1,6 @@
 /**
- * Browser half of the durable Catppuccin state — an adapter over BOTH shapes
- * of the OFFICIAL settings seam, replacing the pre-0.5.0 `/catppuccin/state`
+ * Browser half of the durable TokyoNight state — an adapter over BOTH shapes
+ * of the OFFICIAL settings seam, replacing the pre-0.5.0 `/tokyonight/state`
  * route wrapper.
  *
  * The seam changed shape in DSH 0.1.7-alpha.1 (issue #15) and both shapes are
@@ -9,7 +9,7 @@
  *
  *  - `ctx.configForms` (>= 0.1.7-alpha.1): the plugin's volatile `Config`
  *    projected into a form keyed by the PROFILE ENTRY id, addressed through
- *    `configForms.get(CATPPUCCIN_ENTRY_ID)`.
+ *    `configForms.get(TOKYONIGHT_ENTRY_ID)`.
  *  - `ctx.settingsScope` (<= 0.1.6-alpha.2): a namespace the Host half
  *    registered, bound with `settingsScope.bind({ namespace })`.
  *
@@ -54,14 +54,14 @@ import type { SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
 import type { ConfigForm, ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import {
-  CATPPUCCIN_ENTRY_ID,
-  CATPPUCCIN_SETTINGS_NS,
+  TOKYONIGHT_ENTRY_ID,
+  TOKYONIGHT_SETTINGS_NS,
   hasUserLayerSection,
   settingsSectionFromState,
   settingsSectionsEqual,
   stateFromSettingsSection,
-  type CatppuccinSettingsSection,
-  type CatppuccinState,
+  type TokyoNightSettingsSection,
+  type TokyoNightState,
 } from '../state.ts'
 
 /** Client-side sync state of one settings namespace — the SHARED shape of
@@ -151,19 +151,19 @@ export function isScopeUsable(snapshot: DurableSnapshot<unknown>): boolean {
 /** The local state contract (with the synthetic `version`) for a usable
  *  scope snapshot; `null` while the section is not resolved. */
 export function durableStateFromSnapshot(
-  snapshot: DurableSnapshot<CatppuccinSettingsSection>,
-): CatppuccinState | null {
+  snapshot: DurableSnapshot<TokyoNightSettingsSection>,
+): TokyoNightState | null {
   if (!isScopeUsable(snapshot) || snapshot.value === undefined) return null
   return stateFromSettingsSection(snapshot.value)
 }
 
 /** The NEW seam's channel (DSH >= 0.1.7-alpha.1). */
 function configFormsScope(
-  form: ConfigForm<CatppuccinSettingsSection>,
-): DurableScope<CatppuccinSettingsSection> {
+  form: ConfigForm<TokyoNightSettingsSection>,
+): DurableScope<TokyoNightSettingsSection> {
   return {
     kind: 'configForms',
-    getSnapshot: () => form.getSnapshot() as ConfigFormSnapshot<CatppuccinSettingsSection>,
+    getSnapshot: () => form.getSnapshot() as ConfigFormSnapshot<TokyoNightSettingsSection>,
     subscribe: (listener) => form.subscribe(listener),
     // The form's `user` is the profile patch's `override`, which the Host
     // defaults to `{}` — so an EMPTY OBJECT is what "no user layer yet" looks
@@ -202,7 +202,7 @@ interface LegacyScopeBinder {
 }
 
 /** The LEGACY seam's channel (DSH <= 0.1.6-alpha.2). */
-function legacyScope(scope: LegacyScope<CatppuccinSettingsSection>): DurableScope<CatppuccinSettingsSection> {
+function legacyScope(scope: LegacyScope<TokyoNightSettingsSection>): DurableScope<TokyoNightSettingsSection> {
   return {
     kind: 'settingsScope',
     getSnapshot: () => scope.getSnapshot(),
@@ -239,14 +239,14 @@ function legacyScope(scope: LegacyScope<CatppuccinSettingsSection>): DurableScop
  * @param ctx - client root context.
  * @returns the scope facade, bound for the lifetime of the caller's fiber.
  */
-export function createDurableScope(ctx: Context): DurableScope<CatppuccinSettingsSection> {
-  let current: DurableScope<CatppuccinSettingsSection> | undefined
+export function createDurableScope(ctx: Context): DurableScope<TokyoNightSettingsSection> {
+  let current: DurableScope<TokyoNightSettingsSection> | undefined
   let offBound: (() => void) | undefined
   const listeners = new Set<() => void>()
   const notify = (): void => {
     for (const listener of [...listeners]) listener()
   }
-  const attach = (next: DurableScope<CatppuccinSettingsSection> | undefined): void => {
+  const attach = (next: DurableScope<TokyoNightSettingsSection> | undefined): void => {
     if (next === current) return
     offBound?.()
     current = next
@@ -257,7 +257,7 @@ export function createDurableScope(ctx: Context): DurableScope<CatppuccinSetting
   }
 
   ctx.inject(['configForms'], (formsCtx) => {
-    attach(configFormsScope(formsCtx.configForms.get<CatppuccinSettingsSection>(CATPPUCCIN_ENTRY_ID)))
+    attach(configFormsScope(formsCtx.configForms.get<TokyoNightSettingsSection>(TOKYONIGHT_ENTRY_ID)))
     return () => { attach(undefined) }
   })
   ctx.inject(['settingsScope'], (legacyCtx) => {
@@ -265,7 +265,7 @@ export function createDurableScope(ctx: Context): DurableScope<CatppuccinSetting
     // gone there), so the legacy lookup is narrowed explicitly.
     const binder = (legacyCtx as unknown as { settingsScope?: LegacyScopeBinder }).settingsScope
     if (binder !== undefined) {
-      attach(legacyScope(binder.bind<CatppuccinSettingsSection>({ namespace: CATPPUCCIN_SETTINGS_NS })))
+      attach(legacyScope(binder.bind<TokyoNightSettingsSection>({ namespace: TOKYONIGHT_SETTINGS_NS })))
     }
     return () => { attach(undefined) }
   })
@@ -273,7 +273,7 @@ export function createDurableScope(ctx: Context): DurableScope<CatppuccinSetting
   return {
     get kind() { return current?.kind ?? 'none' },
     getSnapshot: () => current?.getSnapshot()
-      ?? UNBOUND_SNAPSHOT as DurableSnapshot<CatppuccinSettingsSection>,
+      ?? UNBOUND_SNAPSHOT as DurableSnapshot<TokyoNightSettingsSection>,
     subscribe: (listener) => {
       listeners.add(listener)
       return () => { listeners.delete(listener) }
@@ -289,7 +289,7 @@ export function createDurableScope(ctx: Context): DurableScope<CatppuccinSetting
  *  Writing every field keeps the section self-contained — a partial write
  *  could otherwise leave a knob stuck on a stale override after a document
  *  edit elsewhere. */
-function stateToMutateOps(state: CatppuccinState): SettingsPathOpView[] {
+function stateToMutateOps(state: TokyoNightState): SettingsPathOpView[] {
   const section = settingsSectionFromState(state)
   return [
     { op: 'set', path: ['flavor'], value: section.flavor },
@@ -384,15 +384,15 @@ export type PersistOutcome =
  * a redundant identical mutation).
  */
 export async function persistStateToScope(
-  scope: DurableScope<CatppuccinSettingsSection>,
-  state: CatppuccinState,
+  scope: DurableScope<TokyoNightSettingsSection>,
+  state: TokyoNightState,
   options: {
     /** Snapshot revision the local state was derived from (captured at
      *  schedule time). Omit to skip the read-side guard entirely. */
     baseRevision?: number | undefined
     /** Section of the last successfully issued write (our own echo
      *  fingerprint — revision movement matching it is not a conflict). */
-    lastWrittenSection?: CatppuccinSettingsSection | undefined
+    lastWrittenSection?: TokyoNightSettingsSection | undefined
   } = {},
 ): Promise<PersistOutcome> {
   const snapshot = scope.getSnapshot()

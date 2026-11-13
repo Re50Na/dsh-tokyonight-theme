@@ -15,10 +15,10 @@ import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { FLAVOR_STORAGE_KEY, apply } from '../src/client/index.ts'
-import { CatppuccinDetailCard } from '../src/client/detail-card.tsx'
-import { CatppuccinSettingsPage } from '../src/client/settings-section.tsx'
-import { CATPPUCCIN_ENTRY_ID, defaultSettingsSection } from '../src/state.ts'
-import { PACKAGE_NAME, UPDATE_CHECK_CLIENT_TIMEOUT_MS } from '../src/update-check.ts'
+import { TokyoNightDetailCard } from '../src/client/detail-card.tsx'
+import { TokyoNightSettingsPage } from '../src/client/settings-section.tsx'
+import { TOKYONIGHT_ENTRY_ID, defaultSettingsSection } from '../src/state.ts'
+import { PACKAGE_NAME } from '../src/identity.ts'
 import type { ThemeSnapshot } from '@deepseek-ai/dsh-client-ui-theme/client'
 
 interface Snapshot { preference: string; revision: number }
@@ -208,7 +208,7 @@ describe('issue #10: flavour restore must not re-enter the theme/change dispatch
     const sss = makeSettingsScope()
     ctx.provide('settingsScope', sss.service as never)
 
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     apply(ctx)
 
     // The presenter-like listener is registered AFTER the plugin's restore
@@ -225,8 +225,8 @@ describe('issue #10: flavour restore must not re-enter the theme/change dispatch
     // Let the deferred restore (microtask) run.
     await new Promise((r) => setTimeout(r, 10))
 
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
-    expect(applied[applied.length - 1]).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
+    expect(applied[applied.length - 1]).toBe('tokyonight-light')
     // Sanity: the stale dark snapshot was applied at some point (the presenter
     // applies every event), but it must never be the LAST one.
     expect(applied).toContain('dark')
@@ -242,7 +242,7 @@ describe('issue #10: flavour restore must not re-enter the theme/change dispatch
     const sss = makeSettingsScope()
     ctx.provide('settingsScope', sss.service as never)
 
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     apply(ctx)
     await new Promise((r) => setTimeout(r, 10)) // initial restore runs
 
@@ -273,7 +273,7 @@ describe('issue #15: the client boots on either settings seam', () => {
     ctx.provide('slots', { inject: () => () => {}, register: () => () => {} })
     ctx.provide('locale', { register: () => () => {}, addLanguage: () => () => {}, bind: () => (key: string) => key })
     provide(ctx)
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     apply(ctx)
     return { ctx, theme }
   }
@@ -289,7 +289,7 @@ describe('issue #15: the client boots on either settings seam', () => {
     const { theme } = mount((ctx) => { ctx.provide('configForms', forms.service as never) })
     await new Promise((r) => setTimeout(r, 400)) // boot restore + debounced push
 
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
     // The durable push went through the new channel, at the whole-section
     // granularity the adapter uses (one atomic mutation per burst).
     expect(forms.mutations).toHaveLength(1)
@@ -301,7 +301,7 @@ describe('issue #15: the client boots on either settings seam', () => {
     const sss = makeSettingsScope()
     const { theme } = mount((ctx) => { ctx.provide('settingsScope', sss.service as never) })
     await new Promise((r) => setTimeout(r, 10))
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
   })
 
   it('hydrates when the settings service only appears after apply', async () => {
@@ -313,7 +313,7 @@ describe('issue #15: the client boots on either settings seam', () => {
     ctx.provide('theme', theme)
     ctx.provide('slots', { inject: () => () => {}, register: () => () => {} })
     ctx.provide('locale', { register: () => () => {}, addLanguage: () => () => {}, bind: () => (key: string) => key })
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     apply(ctx)
 
     // Same resolved-section fixture as above (issue #30); the late bind is
@@ -322,7 +322,7 @@ describe('issue #15: the client boots on either settings seam', () => {
     ctx.provide('configForms', forms.service as never)
     await new Promise((r) => setTimeout(r, 400))
 
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
     // The late bind notified the plugin, so the boot push ran after all.
     expect(forms.mutations).toHaveLength(1)
   })
@@ -340,7 +340,7 @@ describe('issue #15: the client boots on either settings seam', () => {
     const { slots, registered } = makeSlots()
     ctx.provide('slots', slots as never)
     ctx.provide('locale', { register: () => () => {}, addLanguage: () => () => {}, bind: () => (key: string) => key })
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     apply(ctx)
 
     // The user picks a flavour while the settings service is still absent —
@@ -348,15 +348,15 @@ describe('issue #15: the client boots on either settings seam', () => {
     const page = registered.find((entry) => entry.name === 'settings.section')
     if (page === undefined) throw new Error('settings page was not registered')
     const face = (page.options.inject as () => { flavor: { select: (choice: string) => void } })()
-    face.flavor.select('catppuccin-mocha')
+    face.flavor.select('tokyonight-night')
     await new Promise((resolve) => setTimeout(resolve, 50)) // still inside the 300 ms debounce
 
-    // The service lands and its document carries an OLDER choice (frappe)
+    // The service lands and its document carries an OLDER choice (storm)
     // from a previous session — exactly the state the rollback used to
     // overwrite the fresh pick with.
-    const documentSection = { ...defaultSettingsSection(), flavor: 'catppuccin-frappe' as const }
+    const documentSection = { ...defaultSettingsSection(), flavor: 'tokyonight-storm' as const }
     const forms = makeConfigForms({
-      user: { flavor: 'catppuccin-frappe' },
+      user: { flavor: 'tokyonight-storm' },
       value: documentSection,
       revision: 7,
     })
@@ -364,10 +364,10 @@ describe('issue #15: the client boots on either settings seam', () => {
     await new Promise((resolve) => setTimeout(resolve, 700)) // hydration + debounce + flush
 
     // The fresh pick was pushed — the localStorage cache still holds it and
-    // the durable write went out with the mocha flavour.
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-mocha')
+    // the durable write went out with the night flavour.
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-night')
     const written = forms.mutations.flat() as { op: string; path: string[]; value: unknown }[]
-    expect(written.some((op) => op.path.join('.') === 'flavor' && op.value === 'catppuccin-mocha')).toBe(true)
+    expect(written.some((op) => op.path.join('.') === 'flavor' && op.value === 'tokyonight-night')).toBe(true)
     await ctx.fiber.dispose()
   })
 
@@ -395,18 +395,18 @@ describe('issue #15: the client boots on either settings seam', () => {
 
     const documentSection = {
       ...defaultSettingsSection(),
-      flavor: 'catppuccin-frappe' as const,
+      flavor: 'tokyonight-storm' as const,
       glass: { enabled: true, mode: 'compat' as const, blur: 12, frost: 33, brightness: 77, gap: 12, glowStrength: 100, glowSize: 100, glow: false },
     }
-    const forms = makeConfigForms({ user: { flavor: 'catppuccin-frappe' }, value: documentSection, revision: 7 })
+    const forms = makeConfigForms({ user: { flavor: 'tokyonight-storm' }, value: documentSection, revision: 7 })
     ctx.provide('configForms', forms.service as never)
     await new Promise((resolve) => setTimeout(resolve, 700))
 
     // Nothing was written — no boot-window change existed, so the document wins…
     expect(forms.mutations).toHaveLength(0)
     // …and it was ADOPTED, which is the whole point of the fix.
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-frappe')
-    expect(theme.getTheme().preference).toBe('catppuccin-frappe')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-storm')
+    expect(theme.getTheme().preference).toBe('tokyonight-storm')
     await ctx.fiber.dispose()
   })
 })
@@ -451,7 +451,7 @@ describe('issue #31: a late document echo must not revert a newer local change',
     ctx.provide('slots', slots as never)
     ctx.provide('locale', { register: () => () => {}, addLanguage: () => () => {}, bind: (key: string) => key })
     ctx.provide('configForms', forms.service as never)
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-frappe')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-storm')
     apply(ctx)
     const page = registered.find((entry) => entry.name === 'settings.section')
     if (page === undefined) throw new Error('settings page was not registered')
@@ -465,14 +465,14 @@ describe('issue #31: a late document echo must not revert a newer local change',
   }
 
   it('keeps a pick whose echo of the pre-change document lands during the debounce', async () => {
-    const documentSection = sectionOf('catppuccin-frappe')
-    const forms = makeConfigForms({ user: { flavor: 'catppuccin-frappe' }, value: documentSection, revision: 7 })
+    const documentSection = sectionOf('tokyonight-storm')
+    const forms = makeConfigForms({ user: { flavor: 'tokyonight-storm' }, value: documentSection, revision: 7 })
     const { ctx, theme, face } = mount(forms)
     await new Promise((resolve) => setTimeout(resolve, 20))
 
-    // The user picks latte; the durable flush is still 300 ms away.
-    face.flavor.select('catppuccin-latte')
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-latte')
+    // The user picks light; the durable flush is still 300 ms away.
+    face.flavor.select('tokyonight-light')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-light')
 
     // The mirror publishes the document as it was BEFORE that pick — the echo
     // of an earlier write, at the revision that write carried.
@@ -480,52 +480,52 @@ describe('issue #31: a late document echo must not revert a newer local change',
     forms.push(documentSection, 7)
     await new Promise((resolve) => setTimeout(resolve, 20))
 
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY), 'the cache was rolled back').toBe('catppuccin-latte')
-    expect(theme.getTheme().preference, 'the runtime was rolled back').toBe('catppuccin-latte')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY), 'the cache was rolled back').toBe('tokyonight-light')
+    expect(theme.getTheme().preference, 'the runtime was rolled back').toBe('tokyonight-light')
 
     // …and the queued flush still carries the pick out, so the document agrees.
     await new Promise((resolve) => setTimeout(resolve, 400))
     const written = forms.mutations.flat() as { op: string; path: string[]; value: unknown }[]
-    expect(written.some((op) => op.path.join('.') === 'flavor' && op.value === 'catppuccin-latte')).toBe(true)
+    expect(written.some((op) => op.path.join('.') === 'flavor' && op.value === 'tokyonight-light')).toBe(true)
     await ctx.fiber.dispose()
   })
 
   it('ignores a stale view whose revision went backwards, but adopts a newer edit', async () => {
-    const documentSection = sectionOf('catppuccin-latte')
-    const forms = makeConfigForms({ user: { flavor: 'catppuccin-latte' }, value: documentSection, revision: 8 })
+    const documentSection = sectionOf('tokyonight-light')
+    const forms = makeConfigForms({ user: { flavor: 'tokyonight-light' }, value: documentSection, revision: 8 })
     const { ctx, theme } = mount(forms)
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
 
     // A describe read that resolved late: an OLDER document at an older
     // revision. Adopting it would rewind what the user is looking at.
-    forms.push(sectionOf('catppuccin-mocha'), 5)
+    forms.push(sectionOf('tokyonight-night'), 5)
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-light')
 
     // A genuine external edit (another window) moves the document forward and
     // must still win — the guard is not a blanket "never adopt".
-    forms.push(sectionOf('catppuccin-macchiato'), 9)
+    forms.push(sectionOf('tokyonight-storm'), 9)
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(theme.getTheme().preference).toBe('catppuccin-macchiato')
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-macchiato')
+    expect(theme.getTheme().preference).toBe('tokyonight-storm')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-storm')
     await ctx.fiber.dispose()
   })
 
   it('keeps the runtime preference while recycling an override-changed registration', async () => {
-    const forms = makeConfigForms({ user: { flavor: 'catppuccin-mocha' }, value: sectionOf('catppuccin-mocha'), revision: 7 })
+    const forms = makeConfigForms({ user: { flavor: 'tokyonight-night' }, value: sectionOf('tokyonight-night'), revision: 7 })
     const { ctx, theme, face } = mount(forms)
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
 
     face.flavor.setOverrides({ '--dsw-alias-bg-base': '#000000' })
     // Synchronously, no microtask in between: disposing the ACTIVE theme makes
     // the runtime reset its preference to the default, and only the synchronous
     // re-assert puts it back before any observer can read the gap.
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
     await ctx.fiber.dispose()
   })
 
@@ -533,13 +533,13 @@ describe('issue #31: a late document echo must not revert a newer local change',
     // The document already carries a user layer (otherwise the adoption path is
     // not reached at all — a document with no user layer only receives pushes).
     const forms = makeConfigForms({
-      user: { flavor: 'catppuccin-frappe' },
-      value: sectionOf('catppuccin-frappe'),
+      user: { flavor: 'tokyonight-storm' },
+      value: sectionOf('tokyonight-storm'),
       revision: 3,
     })
     const { ctx, theme, face } = mount(forms, { builtin: 'dark' })
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(theme.getTheme().preference).toBe('catppuccin-frappe')
+    expect(theme.getTheme().preference).toBe('tokyonight-storm')
 
     // Turning the flavour off hands back the built-in preference — that is not
     // a pick, so it must not record one (a recorded `dark` used to veto every
@@ -549,42 +549,42 @@ describe('issue #31: a late document echo must not revert a newer local change',
     await new Promise((resolve) => setTimeout(resolve, 400))
 
     // Another window turns the flavour back on.
-    forms.push(sectionOf('catppuccin-latte'), 9)
+    forms.push(sectionOf('tokyonight-light'), 9)
     await new Promise((resolve) => setTimeout(resolve, 30))
-    expect(theme.getTheme().preference, 'the restore was vetoed by a recorded pick').toBe('catppuccin-latte')
+    expect(theme.getTheme().preference, 'the restore was vetoed by a recorded pick').toBe('tokyonight-light')
     await ctx.fiber.dispose()
   })
 
   it('recovers a pick whose registration was skipped, and rolls the cache back when it cannot', async () => {
-    const forms = makeConfigForms({ user: { flavor: 'catppuccin-latte' }, value: sectionOf('catppuccin-latte'), revision: 7 })
+    const forms = makeConfigForms({ user: { flavor: 'tokyonight-light' }, value: sectionOf('tokyonight-light'), revision: 7 })
     const { ctx, theme, face } = mount(forms)
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(theme.getTheme().preference).toBe('catppuccin-latte')
+    expect(theme.getTheme().preference).toBe('tokyonight-light')
 
     // The first registration attempt fails (a tolerated duplicate / dead
     // registrant): the pick must not end up "applied to the cache only".
     const original = theme.register.bind(theme)
     let failed = 0
     theme.register = (definition) => {
-      if (definition.id === 'catppuccin-mocha' && failed === 0) {
+      if (definition.id === 'tokyonight-night' && failed === 0) {
         failed += 1
-        throw new Error('theme "catppuccin-mocha" is already registered')
+        throw new Error('theme "tokyonight-night" is already registered')
       }
       return original(definition)
     }
-    face.flavor.select('catppuccin-mocha')
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-mocha')
+    face.flavor.select('tokyonight-night')
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-night')
 
     // One that can never register: the cache goes back so the two stores keep
     // telling the same story (and the row reports the conflict).
     theme.register = (definition) => {
-      if (definition.id === 'catppuccin-macchiato') throw new Error('nope')
+      if (definition.id === 'tokyonight-storm') throw new Error('nope')
       return original(definition)
     }
-    face.flavor.select('catppuccin-macchiato')
-    expect(theme.getTheme().preference).toBe('catppuccin-mocha')
-    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('catppuccin-mocha')
+    face.flavor.select('tokyonight-storm')
+    expect(theme.getTheme().preference).toBe('tokyonight-night')
+    expect(localStorage.getItem(FLAVOR_STORAGE_KEY)).toBe('tokyonight-night')
     await ctx.fiber.dispose()
   })
 })
@@ -602,7 +602,7 @@ describe('Plugins-page card', () => {
     ctx.provide('slots', slots as never)
     ctx.provide('locale', { register: () => () => {}, addLanguage: () => () => {}, bind: () => (key: string) => key })
     provide(ctx)
-    localStorage.setItem(FLAVOR_STORAGE_KEY, 'catppuccin-latte')
+    localStorage.setItem(FLAVOR_STORAGE_KEY, 'tokyonight-light')
     apply(ctx)
     return { ctx, registered }
   }
@@ -612,25 +612,25 @@ describe('Plugins-page card', () => {
     const { registered } = mount((ctx) => { ctx.provide('configForms', forms.service as never) })
     await new Promise((r) => setTimeout(r, 10)) // the inject callback runs on fiber activation
 
-    expect(forms.whileServed).toHaveBeenCalledWith([CATPPUCCIN_ENTRY_ID], expect.any(Function))
+    expect(forms.whileServed).toHaveBeenCalledWith([TOKYONIGHT_ENTRY_ID], expect.any(Function))
     const card = registered.find((entry) => entry.name === 'plugins.bundle.config')
     // The page dispatches with `{ entryKey: pkg.name }`, i.e. the PACKAGE name
     // — NOT the profile entry id that keys the settings namespace.
     expect(card?.options.key).toBe(PACKAGE_NAME)
-    expect(card?.options.key).not.toBe(CATPPUCCIN_ENTRY_ID)
-    expect(card?.options.locale).toBe('catppuccin')
-    expect(card?.component).toBe(CatppuccinDetailCard)
+    expect(card?.options.key).not.toBe(TOKYONIGHT_ENTRY_ID)
+    expect(card?.options.locale).toBe('tokyonight')
+    expect(card?.component).toBe(TokyoNightDetailCard)
     // Issue #27: the preferences live on the plugin's OWN settings page, and
     // the General section keeps none of our rows. This pair is the regression
     // lock for the move — either half alone would let the old placement back in.
     const section = registered.find((entry) => entry.name === 'settings.section')
-    expect(section?.options.id).toBe('catppuccin')
+    expect(section?.options.id).toBe('tokyonight')
     expect(section?.options.order).toBe(25)
-    expect(section?.options.locale).toBe('catppuccin')
+    expect(section?.options.locale).toBe('tokyonight')
     // A thunk, not a string: the shell resolves it per read, so a language
     // switch relabels the nav row without re-registering.
     expect(typeof section?.options.label).toBe('function')
-    expect(section?.component).toBe(CatppuccinSettingsPage)
+    expect(section?.component).toBe(TokyoNightSettingsPage)
     expect(registered.filter((entry) => entry.name === 'settings.general.item')).toHaveLength(0)
   })
 
@@ -727,75 +727,34 @@ describe('setTheme wrapper ownership (R1)', () => {
   })
 })
 
-/**
- * R3 (2026-10-10 review): the client half of the update check must cap its
- * same-origin fetch — a wedged host otherwise leaves the settings row in its
- * `checking` phase, where the disabled check button makes a retry impossible.
- */
-describe('client update-check fetch discipline (R3)', () => {
-  beforeEach(() => localStorage.clear())
-  afterEach(() => {
-    localStorage.clear()
-    vi.unstubAllGlobals()
-    vi.restoreAllMocks()
-    vi.useRealTimers()
-  })
 
-  /** Mount apply() with a recording slots double and return the update face. */
-  const mountUpdateFace = () => {
+describe('removed updater', () => {
+  it('has no update face or background network activity even with old preferences', async () => {
+    vi.useFakeTimers()
+    localStorage.clear()
+    localStorage.setItem('dsh.tokyonight.autoCheck', 'true')
+    localStorage.setItem('dsh.tokyonight.shikiStyle', 'italic-comments')
+    const fetcher = vi.fn()
+    vi.stubGlobal('fetch', fetcher)
     const ctx = new Context()
     const themeHost = makeThemeHost({ value: undefined })
-    const theme = makeThemeRuntime(ctx, themeHost)
-    ctx.provide('theme', theme)
+    ctx.provide('theme', makeThemeRuntime(ctx, themeHost))
     const { slots, registered } = makeSlots()
     ctx.provide('slots', slots as never)
     ctx.provide('locale', { register: () => () => {}, addLanguage: () => () => {}, bind: () => (key: string) => key })
-    apply(ctx)
-    // Issue #27: the rows live on the plugin's own page, so their faces are
-    // reached through the page's injected composition rather than through a
-    // top-level General row registration.
-    const entry = registered.find((candidate) => candidate.name === 'settings.section')
-    if (entry === undefined) throw new Error('settings page was not registered')
-    const face = (entry.options.inject as () => {
-      update: { check: (channel: 'latest' | 'beta') => Promise<unknown> }
-    })().update
-    return { ctx, face }
-  }
-
-  it('caps the manual check and maps the abort to network.local', async () => {
-    const { ctx, face } = mountUpdateFace()
-    const controller = new AbortController()
-    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(controller.signal)
-    let seenSignal: AbortSignal | undefined
-    vi.stubGlobal('fetch', vi.fn((_url: string, init?: { signal?: AbortSignal }) =>
-      new Promise((_resolve, reject) => {
-        seenSignal = init?.signal
-        init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
-      })))
-
-    const pending = face.check('beta')
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(timeout).toHaveBeenCalledWith(UPDATE_CHECK_CLIENT_TIMEOUT_MS)
-    expect(seenSignal).toBe(controller.signal)
-
-    controller.abort()
-    await expect(pending).resolves.toEqual({ ok: false, code: 'network.local', error: 'network.local' })
-    await ctx.fiber.dispose()
-  })
-
-  it('gives the periodic auto-check the same capped budget', async () => {
-    vi.useFakeTimers()
-    const { ctx } = mountUpdateFace()
-    let seenSignal: AbortSignal | undefined
-    vi.stubGlobal('fetch', vi.fn((_url: string, init?: { signal?: AbortSignal }) => {
-      seenSignal = init?.signal
-      return Promise.resolve({ ok: true, json: async () => ({ ok: true, code: 'ok' }) })
-    }))
-
-    await vi.advanceTimersByTimeAsync(3100) // the 3 s boot probe fires
-
-    expect(seenSignal).toBeInstanceOf(AbortSignal)
-    await ctx.fiber.dispose()
+    try {
+      apply(ctx)
+      const section = registered.find(entry => entry.name === 'settings.section')!
+      const face = (section.options.inject as () => Record<string, unknown>)()
+      expect(face).not.toHaveProperty('update')
+      expect(face.flavor).not.toHaveProperty('setShikiStyle')
+      await vi.advanceTimersByTimeAsync(6 * 60 * 60 * 1000 + 3100)
+      expect(fetcher).not.toHaveBeenCalled()
+    } finally {
+      await ctx.fiber.dispose()
+      localStorage.clear()
+      vi.unstubAllGlobals()
+      vi.useRealTimers()
+    }
   })
 })

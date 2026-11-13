@@ -1,7 +1,7 @@
 {
-  "name": "@nonamelego/dsh-catppuccin",
-  "description": "Catppuccin themes + a toggleable glassmorphism skin for the DeepSeek Harness web GUI — Latte, Frappé, Macchiato and Mocha registered into the official theme system (Appearance settings), fully remapping the --dsw-* token ladder, with adjustable frosted glass for the top bar, sidebar, composer and trajectory view.",
-  "version": "0.7.3",
+  "name": "dsh-tokyonight-theme",
+  "description": "Tokyo Night themes for DeepSeek Harness \u2014 Night, Storm and Light, with optional glass effects.",
+  "version": "0.1.0-beta.0",
   "icon": "icon.png",
   "type": "module",
   "packageManager": "pnpm@10.33.3",
@@ -12,18 +12,18 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NoNameLeGo/dsh-catppuccin-theme.git"
+    "url": "git+https://github.com/Re50Na/dsh-tokyonight-theme.git"
   },
-  "homepage": "https://github.com/NoNameLeGo/dsh-catppuccin-theme#readme",
+  "homepage": "https://github.com/Re50Na/dsh-tokyonight-theme#readme",
   "bugs": {
-    "url": "https://github.com/NoNameLeGo/dsh-catppuccin-theme/issues"
+    "url": "https://github.com/Re50Na/dsh-tokyonight-theme/issues"
   },
   "keywords": [
     "dsh",
     "deepseek-harness",
-    "catppuccin",
     "theme",
-    "dsh-plugin"
+    "dsh-plugin",
+    "tokyonight"
   ],
   "exports": {
     ".": "./lib/index.js",
@@ -48,45 +48,6 @@
     },
     "compatibility": {
       "dsh": ">=0.1.7-rc.1",
-      "dshReleases": {
-        "0.1.7-rc.1": "compatible",
-        "0.2.0-rc.2": "compatible",
-        "0.2.1-rc.2": "compatible",
-        "0.2.1-rc.3": "compatible",
-        "0.2.1-rc.5": "compatible"
-      },
-      "dshOperations": {
-        "0.1.7-rc.1": {
-          "install": "passed",
-          "start": "passed",
-          "uninstall": "unknown",
-          "rollback": "unknown"
-        },
-        "0.2.0-rc.2": {
-          "install": "passed",
-          "start": "passed",
-          "uninstall": "unknown",
-          "rollback": "unknown"
-        },
-        "0.2.1-rc.2": {
-          "install": "passed",
-          "start": "passed",
-          "uninstall": "unknown",
-          "rollback": "unknown"
-        },
-        "0.2.1-rc.3": {
-          "install": "passed",
-          "start": "passed",
-          "uninstall": "unknown",
-          "rollback": "unknown"
-        },
-        "0.2.1-rc.5": {
-          "install": "passed",
-          "start": "passed",
-          "uninstall": "unknown",
-          "rollback": "unknown"
-        }
-      },
       "profiles": [
         "web",
         "desktop"
@@ -100,7 +61,8 @@
     "icon.png",
     "README.md",
     "LICENSE",
-    "*.map"
+    "*.map",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "publishConfig": {
     "access": "public"
@@ -115,7 +77,9 @@
     "docs:api": "typedoc",
     "gen:palettes": "node scripts/generate-palettes.mjs",
     "gen:themes": "node scripts/generate-tui-themes.mjs",
-    "changelog:gen": "node scripts/gen-changelog.mjs"
+    "changelog:gen": "node scripts/gen-changelog.mjs",
+    "gen:shiki": "node scripts/generate-shiki-tokens.mjs",
+    "gen:all": "pnpm gen:palettes && pnpm gen:shiki && pnpm gen:themes"
   },
   "license": "MIT",
   "peerDependencies": {

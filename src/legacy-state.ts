@@ -2,8 +2,8 @@
  * Legacy durable-state read — the one-shot migration source for 0.5.0.
  *
  * Up to 0.4.x the plugin persisted its state in a small JSON file under the
- * DSH home (`catppuccin-state.json`), served to the Client through the
- * `/catppuccin/state` route. 0.5.0 migrates persistence to the official
+ * DSH home (`tokyonight-state.json`), served to the Client through the
+ * `/tokyonight/state` route. 0.5.0 migrates persistence to the official
  * settings seam (`ctx.settings` Host-side, and whichever Client transport the
  * host serves — see `src/client/state-sync.ts`), which is durable across
  * browsers and origins just like the file was (it lives in the DSH home). The legacy file is READ-ONLY here: 0.5.0 migrates its content into
@@ -16,7 +16,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { defaultDshHome } from './profile-detect.ts'
-import { STATE_FILENAME, sanitizeState, type CatppuccinState } from './state.ts'
+import { STATE_FILENAME, sanitizeState, type TokyoNightState } from './state.ts'
 
 /** Absolute path of the legacy state file under a DSH home. */
 export function legacyStateFilePath(home = defaultDshHome()): string {
@@ -24,7 +24,7 @@ export function legacyStateFilePath(home = defaultDshHome()): string {
 }
 
 /** Read the legacy durable state; absent or unparseable input means none yet. */
-export function readLegacyState(home = defaultDshHome()): CatppuccinState | null {
+export function readLegacyState(home = defaultDshHome()): TokyoNightState | null {
   try {
     return sanitizeState(JSON.parse(readFileSync(legacyStateFilePath(home), 'utf8')))
   } catch {

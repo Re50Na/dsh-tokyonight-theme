@@ -46,7 +46,7 @@ jobs:
   # 启动级检查（EE+FF 合并立项的 D 方案）：建一个临时 DSH_HOME、把本仓库 link 进它的 web
   # profile、真起 `dsh web`，然后用 Playwright 断言「插件真被加载 / 风味真生效 / 玻璃真能切 /
   # 关键区域的计算样式符合不变量」。**刻意不做整图像素对比**——理由与取舍见
-  # docs/plugin-improvements.md §3.9（断言式采样不随字体/渲染器漂移，且仓库已有很强的样式级断言）。
+  # 使用行为断言和关键区域样式采样验证插件启动。
   #
   # 为什么单独一个 job：它要装宿主、下载 Chromium（~150 MB），不该让每次 typecheck/test 都付这笔钱；
   # 宿主与浏览器都放全局，仓库的 devDependencies 不为「能跑一次 e2e」而变重。

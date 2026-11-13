@@ -3,7 +3,7 @@
  * seam the running host offers (issue #15 split it out of `src/index.ts` so
  * the composition stays thin and the migration is unit-testable).
  *
- * The migration writes `$DSH_HOME/catppuccin-state.json` into the durable
+ * The migration writes `$DSH_HOME/tokyonight-state.json` into the durable
  * store exactly once, and only while that store holds NO user layer yet — a
  * user who already configured through the official settings surface (or a
  * previous migration) is never overwritten. The legacy file is left on disk
@@ -73,8 +73,8 @@ export interface MigrationOptions {
 /**
  * Run the migration once.
  * @param settings - the live settings service.
- * @param ns - the namespace to write: `CATPPUCCIN_SETTINGS_NS` on the legacy
- *             seam, `CATPPUCCIN_ENTRY_ID` on the new one.
+ * @param ns - the namespace to write: `TOKYONIGHT_SETTINGS_NS` on the legacy
+ *             seam, `TOKYONIGHT_ENTRY_ID` on the new one.
  * @param hasUserLayer - the channel's own "the store already holds a user
  *             layer" predicate (see the module header).
  * @param options - fence policy (see {@link MigrationOptions}).
@@ -145,7 +145,7 @@ export function scheduleLegacyMigration(
       })
       .catch((error: unknown) => {
         settled = true
-        console.warn(`[dsh-catppuccin] legacy state migration failed: ${String(error)}`)
+        console.warn(`[dsh-tokyonight] legacy state migration failed: ${String(error)}`)
       })
   }
   ctx.effect(() => {
@@ -161,5 +161,5 @@ export function scheduleLegacyMigration(
       clearTimeout(late)
       off()
     }
-  }, 'catppuccin: legacy state migration')
+  }, 'tokyonight: legacy state migration')
 }

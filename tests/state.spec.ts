@@ -10,8 +10,8 @@
  */
 import { describe, expect, it } from 'vitest'
 import {
-  CATPPUCCIN_THEME_IDS,
-  CATPPUCCIN_SETTINGS_NS,
+  TOKYONIGHT_THEME_IDS,
+  TOKYONIGHT_SETTINGS_NS,
   DEFAULT_GLASS,
   STATE_FILENAME,
   STATE_VERSION,
@@ -26,10 +26,10 @@ import {
   settingsSectionFromState,
   settingsSectionsEqual,
   stateFromSettingsSection,
-  type CatppuccinSettingsSection,
+  type TokyoNightSettingsSection,
 } from '../src/state.ts'
-import { CATPPUCCIN_FLAVORS } from '../src/client/palettes.ts'
-import { CATPPUCCIN_FLAVOR_VALUES } from '../src/client/index.ts'
+import { TOKYONIGHT_FLAVORS } from '../src/client/palettes.ts'
+import { TOKYONIGHT_FLAVOR_VALUES } from '../src/client/index.ts'
 
 /**
  * One mutation per field of the durable section, each moved away from the
@@ -42,13 +42,13 @@ import { CATPPUCCIN_FLAVOR_VALUES } from '../src/client/index.ts'
  * @param base - the section to mutate (the shipped defaults).
  * @returns one mutant per field, keyed by the field's path in the section.
  */
-function sectionMutants(base: CatppuccinSettingsSection): Record<string, CatppuccinSettingsSection> {
+function sectionMutants(base: TokyoNightSettingsSection): Record<string, TokyoNightSettingsSection> {
   return {
-    flavor: { ...base, flavor: 'catppuccin-latte' },
+    flavor: { ...base, flavor: 'tokyonight-light' },
     // `followSystem` only moves together with a flavour: `sanitizeState` drops
     // it while `flavor` is `off` (the "off wins over follow" invariant).
-    followSystem: { ...base, flavor: 'catppuccin-mocha', followSystem: true },
-    followDark: { ...base, followDark: 'catppuccin-frappe' },
+    followSystem: { ...base, flavor: 'tokyonight-night', followSystem: true },
+    followDark: { ...base, followDark: 'tokyonight-storm' },
     'glass.enabled': { ...base, glass: { ...base.glass, enabled: true } },
     'glass.mode': { ...base, glass: { ...base.glass, mode: 'compat' } },
     'glass.blur': { ...base, glass: { ...base.glass, blur: 40 } },
@@ -67,7 +67,7 @@ function sectionMutants(base: CatppuccinSettingsSection): Record<string, Catppuc
 
 /** Every field path of a section, derived from the section itself (so a new
  *  field is missing from {@link sectionMutants} loudly, not silently). */
-function sectionFieldPaths(base: CatppuccinSettingsSection): string[] {
+function sectionFieldPaths(base: TokyoNightSettingsSection): string[] {
   return [
     'flavor',
     ...Object.keys(base.glass).map((key) => `glass.${key}`),
@@ -76,13 +76,13 @@ function sectionFieldPaths(base: CatppuccinSettingsSection): string[] {
 }
 
 describe('durable state defaults', () => {
-  it('defaults to no Catppuccin flavour, no glass, auto-check on, stable channel', () => {
+  it('defaults to no TokyoNight flavour, no glass, auto-check on, stable channel', () => {
     expect(defaultState()).toEqual({
       version: STATE_VERSION,
       flavor: 'off',
-      // Issue #36: follow mode ships OFF and its dark end defaults to Mocha.
+      // Issue #36: follow mode ships OFF and its dark end defaults to Night.
       followSystem: false,
-      followDark: 'catppuccin-mocha',
+      followDark: 'tokyonight-night',
       glass: {
         enabled: false,
         mode: 'mica',
@@ -115,8 +115,8 @@ describe('durable state defaults', () => {
   })
 
   it('uses the settled namespace and the legacy file name for migration', () => {
-    expect(CATPPUCCIN_SETTINGS_NS).toBe('catppuccin')
-    expect(STATE_FILENAME).toBe('catppuccin-state.json')
+    expect(TOKYONIGHT_SETTINGS_NS).toBe('tokyonight')
+    expect(STATE_FILENAME).toBe('tokyonight-state.json')
   })
 })
 
@@ -128,11 +128,11 @@ describe('sanitizeState', () => {
   })
 
   it('keeps a known flavour and off, and rejects unknown ones', () => {
-    for (const flavor of CATPPUCCIN_THEME_IDS) {
+    for (const flavor of TOKYONIGHT_THEME_IDS) {
       expect(sanitizeState({ flavor }).flavor).toBe(flavor)
     }
     expect(sanitizeState({ flavor: 'off' }).flavor).toBe('off')
-    expect(sanitizeState({ flavor: 'mocha' }).flavor).toBe('off')
+    expect(sanitizeState({ flavor: 'night' }).flavor).toBe('off')
     expect(sanitizeState({ flavor: 5 }).flavor).toBe('off')
   })
 
@@ -191,7 +191,7 @@ describe('sanitizeState', () => {
 
   it('is idempotent — sanitizing a sanitized state changes nothing', () => {
     const once = sanitizeState({
-      flavor: 'catppuccin-latte',
+      flavor: 'tokyonight-light',
       glass: { enabled: true, blur: 9 },
       autoCheck: false,
       updateChannel: 'beta',
@@ -210,9 +210,9 @@ describe('migrate (item Y)', () => {
   })
 
   it('rolls a v1 document forward with the new fields defaulted', () => {
-    const migrated = migrate({ version: 1, flavor: 'catppuccin-mocha', glass: { enabled: true, frosted: 'typo', blur: 30 } })
+    const migrated = migrate({ version: 1, flavor: 'tokyonight-night', glass: { enabled: true, frosted: 'typo', blur: 30 } })
     expect(migrated.version).toBe(STATE_VERSION)
-    expect(migrated.flavor).toBe('catppuccin-mocha')
+    expect(migrated.flavor).toBe('tokyonight-night')
     expect(migrated.glass.enabled).toBe(true)
     expect(migrated.glass.blur).toBe(30)
     expect(migrated.glass.frost).toBe(DEFAULT_GLASS.frost) // unknown key defaulted
@@ -223,20 +223,20 @@ describe('migrate (item Y)', () => {
   })
 
   it('a version-less document is treated as v1', () => {
-    expect(migrate({ flavor: 'catppuccin-frappe' }).flavor).toBe('catppuccin-frappe')
+    expect(migrate({ flavor: 'tokyonight-storm' }).flavor).toBe('tokyonight-storm')
   })
 
   it('a document from a NEWER plugin keeps every understood field (no nuke on downgrade)', () => {
-    const migrated = migrate({ version: 99, flavor: 'catppuccin-latte', autoCheck: false })
-    expect(migrated.flavor).toBe('catppuccin-latte')
+    const migrated = migrate({ version: 99, flavor: 'tokyonight-light', autoCheck: false })
+    expect(migrated.flavor).toBe('tokyonight-light')
     expect(migrated.autoCheck).toBe(false)
   })
 })
 
 describe('durable vs client sync guards', () => {
   it('the persisted flavour values equal the registered theme ids plus off', () => {
-    expect(CATPPUCCIN_THEME_IDS).toEqual(CATPPUCCIN_FLAVORS.map((f) => f.themeId))
-    expect(CATPPUCCIN_THEME_IDS).toEqual(CATPPUCCIN_FLAVOR_VALUES.filter((v) => v !== 'off'))
+    expect(TOKYONIGHT_THEME_IDS).toEqual(TOKYONIGHT_FLAVORS.map((f) => f.themeId))
+    expect(TOKYONIGHT_THEME_IDS).toEqual(TOKYONIGHT_FLAVOR_VALUES.filter((v) => v !== 'off'))
   })
 
 })
@@ -247,7 +247,7 @@ describe('settings-document section helpers (0.5.0)', () => {
     expect(defaultSettingsSection()).toEqual({
       flavor: 'off',
       followSystem: false,
-      followDark: 'catppuccin-mocha',
+      followDark: 'tokyonight-night',
       glass: { ...DEFAULT_GLASS },
       autoCheck: true,
       updateChannel: 'latest',
@@ -259,16 +259,16 @@ describe('settings-document section helpers (0.5.0)', () => {
 
   it('settingsSectionFromState drops the version and copies the glass knobs', () => {
     const state = sanitizeState({
-      flavor: 'catppuccin-frappe',
+      flavor: 'tokyonight-storm',
       glass: { enabled: true, blur: 9 },
       updateChannel: 'beta',
       overrides: { '--dsw-static-blue-500': '#89b4fa' },
     })
     const section = settingsSectionFromState(state)
     expect(section).toEqual({
-      flavor: 'catppuccin-frappe',
+      flavor: 'tokyonight-storm',
       followSystem: false,
-      followDark: 'catppuccin-mocha',
+      followDark: 'tokyonight-night',
       glass: state.glass,
       autoCheck: true,
       updateChannel: 'beta',
@@ -283,14 +283,14 @@ describe('settings-document section helpers (0.5.0)', () => {
 
   it('stateFromSettingsSection re-sanitizes a document section into full state', () => {
     const section = settingsSectionFromState(sanitizeState({
-      flavor: 'catppuccin-macchiato',
+      flavor: 'tokyonight-storm',
       glass: { blur: 3 },
       autoCheck: false,
       shikiStyle: 'italic-comments',
     }))
     const state = stateFromSettingsSection(section)
     expect(state.version).toBe(STATE_VERSION)
-    expect(state.flavor).toBe('catppuccin-macchiato')
+    expect(state.flavor).toBe('tokyonight-storm')
     expect(state.glass.blur).toBe(3)
     expect(state.autoCheck).toBe(false)
     expect(state.shikiStyle).toBe('italic-comments')
@@ -347,10 +347,10 @@ describe('replayLocalChanges (issue #30)', () => {
   // document is readable, and the first usable snapshot replayed the whole
   // local state over it. On such an origin that state is nothing but the
   // shipped defaults ⇒ the document became `flavor: off` / glass off / mica.
-  const documentSection: CatppuccinSettingsSection = {
-    flavor: 'catppuccin-frappe',
+  const documentSection: TokyoNightSettingsSection = {
+    flavor: 'tokyonight-storm',
     followSystem: true,
-    followDark: 'catppuccin-macchiato',
+    followDark: 'tokyonight-storm',
     glass: { enabled: true, mode: 'compat', blur: 12, frost: 33, brightness: 77, gap: 18, glowStrength: 150, glowSize: 180, glow: true },
     autoCheck: false,
     updateChannel: 'beta',
@@ -367,10 +367,10 @@ describe('replayLocalChanges (issue #30)', () => {
 
   it('replays only the flavour picked during the boot window', () => {
     const baseline = defaultSettingsSection()
-    const local = { ...baseline, flavor: 'catppuccin-mocha' as const }
+    const local = { ...baseline, flavor: 'tokyonight-night' as const }
     const replayed = replayLocalChanges(documentState, baseline, local)
     expect(replayed.changed).toBe(true)
-    expect(replayed.state.flavor).toBe('catppuccin-mocha')
+    expect(replayed.state.flavor).toBe('tokyonight-night')
     expect(replayed.state.glass).toEqual(documentSection.glass)
     expect(replayed.state.overrides).toEqual(documentSection.overrides)
     expect(replayed.state.autoCheck).toBe(documentSection.autoCheck)
@@ -388,7 +388,7 @@ describe('replayLocalChanges (issue #30)', () => {
       enabled: true,
       mode: 'compat',
     })
-    expect(replayed.state.flavor).toBe('catppuccin-frappe')
+    expect(replayed.state.flavor).toBe('tokyonight-storm')
     expect(replayed.state.shikiStyle).toBe('italic-comments')
   })
 
@@ -413,13 +413,13 @@ describe('replayLocalChanges (issue #30)', () => {
 
   it('matches every document field when nothing moved, and carries every moved one (drift guard)', () => {
     const baseline = defaultSettingsSection()
-    const mutants: Record<string, (section: CatppuccinSettingsSection) => CatppuccinSettingsSection> = {
-      flavor: (s) => ({ ...s, flavor: 'catppuccin-mocha' }),
+    const mutants: Record<string, (section: TokyoNightSettingsSection) => TokyoNightSettingsSection> = {
+      flavor: (s) => ({ ...s, flavor: 'tokyonight-night' }),
       // Issue #36: follow mode. The flag is mutated TOGETHER with the flavour,
       // because `sanitizeState` drops it while `flavor` is `off` (the "off wins
       // over follow" invariant) — the pair is what actually moves.
-      followSystem: (s) => ({ ...s, flavor: 'catppuccin-mocha', followSystem: true }),
-      followDark: (s) => ({ ...s, followDark: 'catppuccin-frappe' }),
+      followSystem: (s) => ({ ...s, flavor: 'tokyonight-night', followSystem: true }),
+      followDark: (s) => ({ ...s, followDark: 'tokyonight-storm' }),
       'glass.enabled': (s) => ({ ...s, glass: { ...s.glass, enabled: true } }),
       'glass.mode': (s) => ({ ...s, glass: { ...s.glass, mode: 'compat' } }),
       'glass.blur': (s) => ({ ...s, glass: { ...s.glass, blur: 40 } }),

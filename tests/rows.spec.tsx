@@ -16,15 +16,13 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { CatppuccinRow, type CatppuccinRowProps } from '../src/client/CatppuccinRow.tsx'
-import { CatppuccinDetailCard, type CatppuccinDetailCardProps } from '../src/client/detail-card.tsx'
+import { TokyoNightRow, type TokyoNightRowProps } from '../src/client/TokyoNightRow.tsx'
+import { TokyoNightDetailCard, type TokyoNightDetailCardProps } from '../src/client/detail-card.tsx'
 import { GlassRow, type GlassRowProps } from '../src/client/glass/glass-row.tsx'
-import { CatppuccinSettingsPage, type CatppuccinSettingsPageProps } from '../src/client/settings-section.tsx'
+import { TokyoNightSettingsPage, type TokyoNightSettingsPageProps } from '../src/client/settings-section.tsx'
 import { ISSUES_URL, LinksRow, REPO_URL, type LinksRowProps } from '../src/client/LinksRow.tsx'
-import { UPDATE_RETRY_AFTER_MS, UpdateRow, type UpdateRowProps } from '../src/client/UpdateRow.tsx'
-import type { UpdateChannel } from '../src/update-check.ts'
-import { zh, type CatppuccinKey } from '../src/client/locales.ts'
-import { GLOW_SIZE_MAX, GLOW_SIZE_MIN, GLOW_STRENGTH_MAX, type FollowDarkFlavor, type ShikiStyle } from '../src/state.ts'
+import { zh, type TokyoNightKey } from '../src/client/locales.ts'
+import { GLOW_SIZE_MAX, GLOW_SIZE_MIN, GLOW_STRENGTH_MAX, type FollowDarkFlavor } from '../src/state.ts'
 
 afterEach(cleanup)
 
@@ -33,14 +31,14 @@ afterEach(cleanup)
  *  tests/glass-css.spec.ts). Resolved to a string path on purpose — jsdom's
  *  `URL` is not the Node one, and readFileSync rejects it. */
 const ROW_CSS = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'client', 'CatppuccinRow.module.css'),
+  join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'client', 'TokyoNightRow.module.css'),
   'utf8',
 )
 
-const t = (key: CatppuccinKey): string => zh[key]
+const t = (key: TokyoNightKey): string => zh[key]
 
 /** Flavour buttons the row lists (`themes` is a plain display list). */
-const THEMES = [{ id: 'catppuccin-mocha', label: 'Mocha', accent: '#cba6f7' }]
+const THEMES = [{ id: 'tokyonight-night', label: 'Night', accent: '#cba6f7' }]
 
 /** Row props with a fake injected face; returns the spies the assertions read. */
 function makeRow(
@@ -59,7 +57,7 @@ function makeRow(
   const props = {
     t,
     themes: THEMES,
-    current: () => 'catppuccin-mocha',
+    current: () => 'tokyonight-night',
     subscribe: () => () => {},
     select: vi.fn(),
     // Issue #36: follow mode. Available by default so the block renders; a test
@@ -67,17 +65,15 @@ function makeRow(
     followAvailable: opts.followAvailable ?? true,
     followSystem: () => opts.followSystem ?? false,
     setFollowSystem,
-    followDark: (): FollowDarkFlavor => 'catppuccin-mocha',
+    followDark: (): FollowDarkFlavor => 'tokyonight-night',
     setFollowDark,
     overrides: () => map,
     setOverrides,
-    shikiStyle: (): ShikiStyle => 'default',
-    setShikiStyle: vi.fn(),
     subscribePrefs: (listener: () => void) => {
       listeners.add(listener)
       return () => { listeners.delete(listener) }
     },
-  } as unknown as CatppuccinRowProps
+  } as unknown as TokyoNightRowProps
   return { props, setOverrides, setFollowSystem, setFollowDark }
 }
 
@@ -90,10 +86,10 @@ function openOverrides(): { key: HTMLInputElement; value: HTMLInputElement } {
   }
 }
 
-describe('CatppuccinRow override editor', () => {
+describe('TokyoNightRow override editor', () => {
   it('commits an edited value on blur instead of per keystroke (item TT)', () => {
     const { props, setOverrides } = makeRow({ '--dsw-static-blue-500': '#89b4fa' })
-    render(<CatppuccinRow {...props} />)
+    render(<TokyoNightRow {...props} />)
     const { value } = openOverrides()
 
     fireEvent.change(value, { target: { value: '#ff0000' } })
@@ -108,7 +104,7 @@ describe('CatppuccinRow override editor', () => {
 
   it('keeps the row mounted while a value is cleared, and deletes it on blur', () => {
     const { props, setOverrides } = makeRow({ '--dsw-static-blue-500': '#89b4fa' })
-    render(<CatppuccinRow {...props} />)
+    render(<TokyoNightRow {...props} />)
     const { value } = openOverrides()
 
     fireEvent.change(value, { target: { value: '' } })
@@ -121,7 +117,7 @@ describe('CatppuccinRow override editor', () => {
 
   it('writes nothing when the value comes back unchanged', () => {
     const { props, setOverrides } = makeRow({ '--dsw-static-blue-500': '#89b4fa' })
-    render(<CatppuccinRow {...props} />)
+    render(<TokyoNightRow {...props} />)
     const { value } = openOverrides()
 
     fireEvent.blur(value) // no edit at all
@@ -130,7 +126,7 @@ describe('CatppuccinRow override editor', () => {
 
   it('renames a key on blur and keeps the value, dropping a non-token key', () => {
     const { props, setOverrides } = makeRow({ '--dsw-static-blue-500': '#89b4fa' })
-    render(<CatppuccinRow {...props} />)
+    render(<TokyoNightRow {...props} />)
     const { key } = openOverrides()
 
     fireEvent.change(key, { target: { value: '--dsw-static-green-500' } })
@@ -149,7 +145,7 @@ describe('CatppuccinRow override editor', () => {
     // React key, so removing the first draft made React reuse its DOM node for
     // the surviving row — the input kept displaying the DELETED row's key.
     const { props } = makeRow()
-    render(<CatppuccinRow {...props} />)
+    render(<TokyoNightRow {...props} />)
     fireEvent.click(screen.getByRole('button', { name: /自定义覆盖/ }))
 
     const add = screen.getByRole('button', { name: `+ ${t('row.overridesAdd')}` })
@@ -173,7 +169,7 @@ describe('CatppuccinRow override editor', () => {
   })
 })
 
-describe('CatppuccinRow code sample (2026-10-19)', () => {
+describe('TokyoNightRow code sample (2026-10-19)', () => {
   // The shiki pick only shows up inside code blocks, which the settings page
   // does not have — the sample is the in-place target, so it must paint from the
   // SAME token variables the real blocks read. `italic-comments` is a comment
@@ -182,7 +178,7 @@ describe('CatppuccinRow code sample (2026-10-19)', () => {
   // through a prop, or the sample would be a mock.
   it('renders a sample with a comment line', () => {
     const { props } = makeRow()
-    render(<CatppuccinRow {...props} />)
+    render(<TokyoNightRow {...props} />)
 
     const sample = screen.getByLabelText(t('row.previewCode'))
     const lines = [...sample.querySelectorAll('span')].map((span) => span.textContent)
@@ -201,149 +197,6 @@ describe('CatppuccinRow code sample (2026-10-19)', () => {
       )
       expect(decls, `.${name} must not hardcode a colour`).not.toMatch(/#[0-9a-f]{3,8}\b/i)
     }
-  })
-})
-
-describe('UpdateRow timestamp formatting', () => {
-  /** Fake face whose subscribed locale listener actually re-renders the row. */
-  function makeUpdateRow(initialLocale: string) {
-    let locale = initialLocale
-    const localeListeners = new Set<() => void>()
-    const payload = {
-      ok: true,
-      current: '0.5.4',
-      latest: '0.5.5',
-      checkedAt: Date.UTC(2026, 8, 21, 12, 0, 0),
-      channel: 'latest',
-    }
-    const props = {
-      t,
-      check: async () => payload,
-      autoCheck: () => false,
-      setAutoCheck: vi.fn(),
-      channel: () => 'latest',
-      setChannel: vi.fn(),
-      subscribePrefs: () => () => {},
-      lastAutoResult: () => null,
-      subscribeConflict: () => () => {},
-      conflictCount: () => 0,
-      activeLocale: () => locale,
-      subscribeLocale: (listener: () => void) => {
-        localeListeners.add(listener)
-        return () => { localeListeners.delete(listener) }
-      },
-    } as unknown as UpdateRowProps
-    return {
-      props,
-      switchLocale: (next: string): void => {
-        locale = next
-        act(() => { for (const listener of localeListeners) listener() })
-      },
-    }
-  }
-
-  it('formats the check time with the active DSH locale, never the browser default (2026-09-21)', async () => {
-    // `toLocaleString()` with no argument uses the JS runtime locale (= browser),
-    // which is exactly the drift this guards: the interface language is DSH's own.
-    const spy = vi.spyOn(Date.prototype, 'toLocaleString')
-    try {
-      const { props, switchLocale } = makeUpdateRow('ja')
-      render(<UpdateRow {...props} />)
-      fireEvent.click(screen.getByRole('button', { name: t('update.check') }))
-      await waitFor(() => { expect(spy.mock.calls.some((call) => call[0] === 'ja')).toBe(true) })
-      expect(spy.mock.calls.filter((call) => call.length === 0), 'called without a locale').toEqual([])
-
-      // A language switch must re-format the timestamp, not wait for a reload.
-      spy.mockClear()
-      switchLocale('en')
-      await waitFor(() => { expect(spy.mock.calls.some((call) => call[0] === 'en')).toBe(true) })
-    } finally {
-      spy.mockRestore()
-    }
-  })
-})
-
-/**
- * Copy selection by host kind (2026-10-03). The official Electron shell has no
- * CLI path a user can reach — its env carries no community marker and it
- * registers no `desktopProfiles` service, so the Host classifies it as
- * `official-desktop` and sends `updateSpec` (`pkg@tag`) INSTEAD of
- * `updateCommand`. The row must then show the Plugins-page route (delete →
- * re-add) rather than a command nobody there can run.
- */
-describe('UpdateRow copy by host kind', () => {
-  function propsFor(payload: Record<string, unknown>) {
-    return {
-      t,
-      check: async () => payload,
-      autoCheck: () => false,
-      setAutoCheck: vi.fn(),
-      channel: () => 'latest',
-      setChannel: vi.fn(),
-      subscribePrefs: () => () => {},
-      lastAutoResult: () => null,
-      subscribeConflict: () => () => {},
-      conflictCount: () => 0,
-      activeLocale: () => 'zh',
-      subscribeLocale: () => () => {},
-    } as unknown as UpdateRowProps
-  }
-
-  const base = {
-    ok: true,
-    current: '0.5.9',
-    latest: '0.5.10-beta.0',
-    outdated: true,
-    channel: 'beta',
-    profile: 'desktop',
-    profileDetected: true,
-    installSource: 'registry',
-    code: 'ok',
-  } as const
-
-  it('offers the package spec + Plugins-page route on the official shell, never a CLI command', async () => {
-    render(<UpdateRow {...propsFor({
-      ...base,
-      shell: 'official-desktop',
-      env: 'desktop',
-      updateSpec: '@nonamelego/dsh-catppuccin@beta',
-    })} />)
-    fireEvent.click(screen.getByRole('button', { name: t('update.check') }))
-    await waitFor(() => { expect(screen.getByText('@nonamelego/dsh-catppuccin@beta')).toBeDefined() })
-    expect(screen.getByText(t('update.commandHintOfficialDesktop'))).toBeDefined()
-    // The copy button names what it actually copies.
-    expect(screen.getByRole('button', { name: t('update.copySpec') })).toBeDefined()
-    expect(screen.queryByRole('button', { name: t('update.copy') })).toBeNull()
-    // No CLI shape may leak into a shell where nobody can run it.
-    expect(screen.queryByText(/dsh plugin --profile/u)).toBeNull()
-  })
-
-  it('keeps the CLI command on the community shell (it has an in-app terminal)', async () => {
-    const command = 'dsh plugin --profile desktop add @nonamelego/dsh-catppuccin@beta'
-    render(<UpdateRow {...propsFor({
-      ...base,
-      shell: 'community-desktop',
-      env: 'desktop',
-      updateCommand: command,
-    })} />)
-    fireEvent.click(screen.getByRole('button', { name: t('update.check') }))
-    await waitFor(() => { expect(screen.getByText(command)).toBeDefined() })
-    // The hint interpolates the probed profile, so assert on the interpolated text.
-    expect(screen.getByText(t('update.commandHintDesktop').replace('{profile}', 'desktop'))).toBeDefined()
-    expect(screen.getByRole('button', { name: t('update.copy') })).toBeDefined()
-  })
-
-  it('keeps the terminal hint on plain web', async () => {
-    render(<UpdateRow {...propsFor({
-      ...base,
-      shell: 'web',
-      env: 'web',
-      profile: 'web',
-      updateCommand: 'dsh plugin --profile web add @nonamelego/dsh-catppuccin@beta',
-    })} />)
-    fireEvent.click(screen.getByRole('button', { name: t('update.check') }))
-    await waitFor(() => { expect(screen.getByText(t('update.commandHintDetected').replace('{profile}', 'web'))).toBeDefined() })
-    expect(screen.getByRole('button', { name: t('update.copy') })).toBeDefined()
   })
 })
 
@@ -393,47 +246,6 @@ function presetCells(): HTMLButtonElement[] {
   const group = screen.getByRole('group', { name: t('glass.presets') })
   return [...group.querySelectorAll('button')] as HTMLButtonElement[]
 }
-
-describe('UpdateRow auto-retry (audit F6)', () => {
-  it('re-reads the CURRENT channel when the 30s retry fires', async () => {
-    // The check used the render-closure's channel, so switching the channel
-    // after a failure made the single auto-retry query the CHANNEL IT LEFT.
-    vi.useFakeTimers()
-    try {
-      let channelNow: UpdateChannel = 'latest'
-      const calls: UpdateChannel[] = []
-      const props = {
-        t,
-        check: async (channel: UpdateChannel) => {
-          calls.push(channel)
-          return { ok: false, code: 'network.upstream', error: 'timed out' }
-        },
-        autoCheck: () => false,
-        setAutoCheck: vi.fn(),
-        channel: () => channelNow,
-        setChannel: vi.fn(),
-        subscribePrefs: () => () => {},
-        lastAutoResult: () => null,
-        subscribeConflict: () => () => {},
-        conflictCount: () => 0,
-        activeLocale: () => 'en',
-        subscribeLocale: () => () => {},
-      } as unknown as UpdateRowProps
-      render(<UpdateRow {...props} />)
-
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: t('update.check') }))
-      })
-      expect(calls).toEqual(['latest'])
-
-      channelNow = 'beta' // the user switches while the retry is still pending
-      await act(async () => { await vi.advanceTimersByTimeAsync(UPDATE_RETRY_AFTER_MS) })
-      expect(calls).toEqual(['latest', 'beta'])
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-})
 
 describe('GlassRow presets (issue #27)', () => {
   // The group used to be a hand-rolled roving-tabindex segmented control whose
@@ -676,7 +488,7 @@ describe('GlassRow knob value box (issue #27)', () => {
  * silently change what the page shows) and that each row keeps its own
  * affordances — including the ones the schema form could never render.
  */
-describe('CatppuccinDetailCard (Plugins-page card)', () => {
+describe('TokyoNightDetailCard (Plugins-page card)', () => {
   /** The three injected faces the apply-side factories hand the card,
    *  minimally faked — the feedback row carries no face of its own. */
   function makeCardProps() {
@@ -684,40 +496,27 @@ describe('CatppuccinDetailCard (Plugins-page card)', () => {
       t,
       flavor: makeRow().props,
       glass: makeGlassRow({ enabled: true, mode: 'mica', blur: 5, frost: 20, brightness: 50, dark: true }),
-      update: {
-        t,
-        check: async () => null,
-        autoCheck: () => false,
-        setAutoCheck: vi.fn(),
-        channel: () => 'latest',
-        setChannel: vi.fn(),
-        subscribePrefs: () => () => {},
-        lastAutoResult: () => null,
-        subscribeConflict: () => () => {},
-        conflictCount: () => 0,
-        activeLocale: () => 'zh-CN',
-        subscribeLocale: () => () => {},
-      },
-    } as unknown as CatppuccinDetailCardProps
+    } as unknown as TokyoNightDetailCardProps
   }
 
-  it('stacks the flavour, glass, update and feedback rows', () => {
-    const { container } = render(<CatppuccinDetailCard {...makeCardProps()} />)
-    expect(container.querySelector('[data-catppuccin-detail-card]')).not.toBeNull()
+  it('stacks only the flavour, glass and feedback rows', () => {
+    const { container } = render(<TokyoNightDetailCard {...makeCardProps()} />)
+    expect(container.querySelector('[data-tokyonight-detail-card]')).not.toBeNull()
     const text = container.textContent ?? ''
     expect(text).toContain(t('row.title'))
     expect(text).toContain(t('glass.title'))
-    expect(text).toContain(t('update.title'))
+    expect(text).not.toContain('检查 Tokyo Night 插件更新')
     expect(text).toContain(t('links.title'))
   })
 
   it('keeps the affordances a schema-generated form could not render', () => {
-    render(<CatppuccinDetailCard {...makeCardProps()} />)
+    render(<TokyoNightDetailCard {...makeCardProps()} />)
     // One flavour button per theme plus the follow-system choice.
-    expect(screen.getAllByRole('button', { name: /Mocha|跟随系统/ }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('button', { name: /Night|跟随系统/ }).length).toBeGreaterThan(0)
     // The glass presets and the update-check action travel with the rows.
     expect(screen.getByRole('group', { name: t('glass.presets') })).toBeTruthy()
-    expect(screen.getByRole('button', { name: t('update.check') })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '检查更新' })).toBeNull()
+    expect(screen.queryByRole('group', { name: '代码高亮风格' })).toBeNull()
     // The feedback row's two GitHub links render on the detail page too.
     expect(screen.getByRole('link', { name: t('links.issue') })).toBeTruthy()
     expect(screen.getByRole('link', { name: t('links.star') })).toBeTruthy()
@@ -767,64 +566,50 @@ describe('settings page (issue #27)', () => {
       close: () => {},
       flavor: makeRow().props,
       glass: makeGlassRow({ enabled: true, mode: 'mica', blur: 5, frost: 20, brightness: 50, dark: true }),
-      update: {
-        t,
-        check: async () => null,
-        autoCheck: () => false,
-        setAutoCheck: vi.fn(),
-        channel: () => 'latest',
-        setChannel: vi.fn(),
-        subscribePrefs: () => () => {},
-        lastAutoResult: () => null,
-        subscribeConflict: () => () => {},
-        conflictCount: () => 0,
-        activeLocale: () => 'zh-CN',
-        subscribeLocale: () => () => {},
-      },
-    } as unknown as CatppuccinSettingsPageProps
+    } as unknown as TokyoNightSettingsPageProps
   }
 
-  it('renders the page heading and the four rows in order', () => {
-    const { container } = render(<CatppuccinSettingsPage {...makePageProps()} />)
-    expect(container.querySelector('[data-catppuccin-settings]')).not.toBeNull()
+  it('renders the page heading and the three rows in order', () => {
+    const { container } = render(<TokyoNightSettingsPage {...makePageProps()} />)
+    expect(container.querySelector('[data-tokyonight-settings]')).not.toBeNull()
     expect(container.querySelector('h2')?.textContent).toBe(t('page.title'))
-    const rows = [...container.querySelectorAll('[data-catppuccin-row]')]
-      .map((row) => row.getAttribute('data-catppuccin-row'))
-    expect(rows).toEqual(['flavor', 'glass', 'update', 'links'])
+    const rows = [...container.querySelectorAll('[data-tokyonight-row]')]
+      .map((row) => row.getAttribute('data-tokyonight-row'))
+    expect(rows).toEqual(['flavor', 'glass', 'links'])
   })
 
   it('hands the shell close to the mode preview button', () => {
     const close = vi.fn()
-    render(<CatppuccinSettingsPage {...makePageProps()} close={close} />)
+    render(<TokyoNightSettingsPage {...makePageProps()} close={close} />)
     fireEvent.click(screen.getByRole('button', { name: t('glass.previewMode') }))
     expect(close).toHaveBeenCalledTimes(1)
   })
 })
 
-describe('CatppuccinRow follow mode (issue #36)', () => {
+describe('TokyoNightRow follow mode (issue #36)', () => {
   it('renders the switch only when the host serves overrideTokens', () => {
     const available = makeRow()
-    const first = render(<CatppuccinRow {...available.props} />)
+    const first = render(<TokyoNightRow {...available.props} />)
     expect(screen.getByRole('switch', { name: t('row.follow') })).toBeTruthy()
     first.unmount()
 
     // Older hosts have no token-override API, so the feature cannot work at
     // all — a dead switch would be worse than no switch.
     const unavailable = makeRow({}, { followAvailable: false })
-    render(<CatppuccinRow {...unavailable.props} />)
+    render(<TokyoNightRow {...unavailable.props} />)
     expect(screen.queryByRole('switch', { name: t('row.follow') })).toBeNull()
   })
 
   it('reports the toggle to the injected face', () => {
     const { props, setFollowSystem } = makeRow()
-    render(<CatppuccinRow {...props} />)
+    render(<TokyoNightRow {...props} />)
     fireEvent.click(screen.getByRole('switch', { name: t('row.follow') }))
     expect(setFollowSystem).toHaveBeenCalledWith(true)
   })
 
-  it('offers the dark half only while following, and never Latte', () => {
+  it('offers the dark half only while following, and never Light', () => {
     const idle = makeRow()
-    const first = render(<CatppuccinRow {...idle.props} />)
+    const first = render(<TokyoNightRow {...idle.props} />)
     expect(screen.queryByRole('tablist', { name: t('row.followDark') })).toBeNull()
     first.unmount()
 
@@ -832,18 +617,18 @@ describe('CatppuccinRow follow mode (issue #36)', () => {
     const props = {
       ...base.props,
       themes: [
-        { id: 'catppuccin-latte', label: 'Latte', accent: '#eff1f5' },
-        { id: 'catppuccin-mocha', label: 'Mocha', accent: '#cba6f7' },
-        { id: 'catppuccin-macchiato', label: 'Macchiato', accent: '#cad3f5' },
+        { id: 'tokyonight-light', label: 'Light', accent: '#eff1f5' },
+        { id: 'tokyonight-night', label: 'Night', accent: '#cba6f7' },
+        { id: 'tokyonight-storm', label: 'Storm', accent: '#cad3f5' },
       ],
-    } as unknown as CatppuccinRowProps
-    render(<CatppuccinRow {...props} />)
+    } as unknown as TokyoNightRowProps
+    render(<TokyoNightRow {...props} />)
 
     const list = screen.getByRole('tablist', { name: t('row.followDark') })
     const names = [...list.querySelectorAll('[role="tab"]')].map((tab) => tab.textContent)
-    expect(names).toEqual(['Mocha', 'Macchiato'])
-    // Mocha is already selected, so the change has to come from the other one.
-    fireEvent.click(screen.getByRole('tab', { name: 'Macchiato' }))
-    expect(base.setFollowDark).toHaveBeenCalledWith('catppuccin-macchiato')
+    expect(names).toEqual(['Night', 'Storm'])
+    // Night is already selected, so the change has to come from the other one.
+    fireEvent.click(screen.getByRole('tab', { name: 'Storm' }))
+    expect(base.setFollowDark).toHaveBeenCalledWith('tokyonight-storm')
   })
 })

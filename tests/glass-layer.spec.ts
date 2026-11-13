@@ -6,7 +6,7 @@
  * another tab must re-read them and republish the row snapshot. The handler
  * matched the numeric knobs with `event.key in NUMERIC_KEYS`, which tests the
  * object's PROPERTY NAMES (`blur`/`frost`/`brightness`) — never the
- * `dsh.catppuccin.glass.*` storage keys the event actually carries — so the
+ * `dsh.tokyonight.glass.*` storage keys the event actually carries — so the
  * branch was dead and cross-tab knob changes were silently ignored while the
  * `===`-compared mode key kept working. These cases walk each branch of that
  * handler so the next such typo cannot hide behind a passing suite.
@@ -15,8 +15,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { GLASS_ENABLED_KEY, GlassLayer } from '../src/client/glass/glass-layer.ts'
 import { GLOW_SIZE_MAX, GLOW_SIZE_MIN, GLOW_STRENGTH_MAX } from '../src/state.ts'
 
-const BLUR_KEY = 'dsh.catppuccin.glass.blur'
-const MODE_KEY = 'dsh.catppuccin.glass.mode'
+const BLUR_KEY = 'dsh.tokyonight.glass.blur'
+const MODE_KEY = 'dsh.tokyonight.glass.mode'
 
 beforeEach(() => {
   localStorage.clear()
@@ -60,8 +60,8 @@ describe('GlassLayer storage-event wiring (audit F1)', () => {
 
   it('tracks every numeric knob, not just blur', () => {
     const layer = new GlassLayer(fakeCtx())
-    crossTabWrite('dsh.catppuccin.glass.frost', '45')
-    crossTabWrite('dsh.catppuccin.glass.brightness', '80')
+    crossTabWrite('dsh.tokyonight.glass.frost', '45')
+    crossTabWrite('dsh.tokyonight.glass.brightness', '80')
     const snapshot = layer.getSnapshot()
     expect(snapshot.frost).toBe(45)
     expect(snapshot.brightness).toBe(80)
@@ -73,10 +73,10 @@ describe('GlassLayer storage-event wiring (audit F1)', () => {
     // The knob only reaches the DOM while the layer is mounted (applySettings is
     // gated on the enable flag), matching every other knob.
     crossTabWrite(GLASS_ENABLED_KEY, 'true')
-    crossTabWrite('dsh.catppuccin.glass.glow', 'true')
+    crossTabWrite('dsh.tokyonight.glass.glow', 'true')
     expect(layer.getSnapshot().glow).toBe(true)
     expect(document.documentElement.style.getPropertyValue('--dsh-glass-glow')).toBe('1')
-    crossTabWrite('dsh.catppuccin.glass.glow', 'false')
+    crossTabWrite('dsh.tokyonight.glass.glow', 'false')
     expect(document.documentElement.style.getPropertyValue('--dsh-glass-glow')).toBe('0')
   })
 
@@ -87,15 +87,15 @@ describe('GlassLayer storage-event wiring (audit F1)', () => {
     expect(layer.getSnapshot().glowStrength).toBe(100)
 
     crossTabWrite(GLASS_ENABLED_KEY, 'true')
-    crossTabWrite('dsh.catppuccin.glass.glow', 'true')
-    crossTabWrite('dsh.catppuccin.glass.glow-strength', '180')
+    crossTabWrite('dsh.tokyonight.glass.glow', 'true')
+    crossTabWrite('dsh.tokyonight.glass.glow-strength', '180')
     expect(layer.getSnapshot().glowStrength).toBe(180)
     // 180% → the multiplier the stylesheet reads (1.8).
     expect(document.documentElement.style.getPropertyValue('--dsh-glass-glow-strength')).toBe('1.8')
 
     // The ceiling is a measured contrast limit (`GLOW_STRENGTH_MAX`), not 100:
     // a clamp that fell back to the plain 0-100 arm would snap the slider here.
-    crossTabWrite('dsh.catppuccin.glass.glow-strength', '1000')
+    crossTabWrite('dsh.tokyonight.glass.glow-strength', '1000')
     expect(layer.getSnapshot().glowStrength).toBe(GLOW_STRENGTH_MAX)
 
     // The setter clamps the same way (this is the path the settings row uses).
@@ -112,8 +112,8 @@ describe('GlassLayer storage-event wiring (audit F1)', () => {
     expect(layer.getSnapshot().glowSize).toBe(100)
 
     crossTabWrite(GLASS_ENABLED_KEY, 'true')
-    crossTabWrite('dsh.catppuccin.glass.glow', 'true')
-    crossTabWrite('dsh.catppuccin.glass.glow-size', '180')
+    crossTabWrite('dsh.tokyonight.glass.glow', 'true')
+    crossTabWrite('dsh.tokyonight.glass.glow-size', '180')
     expect(layer.getSnapshot().glowSize).toBe(180)
     expect(document.documentElement.style.getPropertyValue('--dsh-glass-glow-size')).toBe('1.8')
 
@@ -153,7 +153,7 @@ describe('GlassLayer storage-event wiring (audit F1)', () => {
   it('ignores unrelated storage keys', () => {
     const layer = new GlassLayer(fakeCtx())
     const before = layer.getSnapshot()
-    crossTabWrite('dsh.catppuccin.flavor', 'catppuccin-mocha')
+    crossTabWrite('dsh.tokyonight.flavor', 'tokyonight-night')
     expect(layer.getSnapshot()).toBe(before) // same reference — nothing republished
   })
 
@@ -188,8 +188,8 @@ describe('GlassLayer storage-event wiring (audit F1)', () => {
     }
     expect(body!.style.getPropertyValue('--dsh-glass-frost')).toBe('0.4') // 20 / 50
 
-    crossTabWrite('dsh.catppuccin.glass.frost', '45')
-    crossTabWrite('dsh.catppuccin.glass.glow', 'true')
+    crossTabWrite('dsh.tokyonight.glass.frost', '45')
+    crossTabWrite('dsh.tokyonight.glass.glow', 'true')
     expect(body!.style.getPropertyValue('--dsh-glass-frost')).toBe('0.9')
     expect(body!.style.getPropertyValue('--dsh-glass-glow')).toBe('1')
 

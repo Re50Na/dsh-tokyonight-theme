@@ -1,7 +1,7 @@
 import { clientBundle } from './tsdown.client.ts'
 
 export default clientBundle(
-  '@nonamelego/dsh-catppuccin',
+  'dsh-tokyonight-theme',
   ['src/index.ts', 'src/tui-themes.ts'],
   {
     lib: {

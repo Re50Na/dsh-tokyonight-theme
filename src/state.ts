@@ -1,5 +1,5 @@
 /**
- * Durable Catppuccin state — the shared contract between the two halves.
+ * Durable TokyoNight state — the shared contract between the two halves.
  *
  * Why this exists: localStorage is scoped per origin, so it is the wrong place
  * for the ONLY copy of a preference. It is per-browser (two browsers on one
@@ -20,7 +20,7 @@
  *
  * Since 0.5.0 the DURABLE copy lives in the official settings seam, which
  * persists under the DSH home exactly like the legacy
- * `$DSH_HOME/catppuccin-state.json` did — origin-independent, so it survives
+ * `$DSH_HOME/tokyonight-state.json` did — origin-independent, so it survives
  * the Desktop's per-launch port churn. The legacy file is kept as a
  * read-only migration source (`src/legacy-state.ts`) and rolled into the
  * settings document once (`src/index.ts`). Browser localStorage remains the
@@ -30,9 +30,9 @@
  *
  * The seam itself is version-dependent (issue #15): DSH <= 0.1.6-alpha.2
  * serves a Client `ctx.settingsScope` bound to a namespace the plugin
- * registers itself (`CATPPUCCIN_SETTINGS_NS`), while >= 0.1.7-alpha.1 serves
+ * registers itself (`TOKYONIGHT_SETTINGS_NS`), while >= 0.1.7-alpha.1 serves
  * `ctx.configForms` projecting the plugin's volatile `Config` form, keyed by
- * the PROFILE ENTRY ID (`CATPPUCCIN_ENTRY_ID`). Both are addressed from this
+ * the PROFILE ENTRY ID (`TOKYONIGHT_ENTRY_ID`). Both are addressed from this
  * one contract (see `src/client/state-sync.ts`).
  */
 export const STATE_VERSION = 1
@@ -46,8 +46,8 @@ export type ShikiStyle = 'default' | 'italic-comments'
 
 /** Legacy settings namespace (DSH <= 0.1.6-alpha.2): the Host registers it
  *  through `settings.installSection`, the Client binds it through
- *  `ctx.settingsScope` (see `src/settings-catppuccin.ts`). */
-export const CATPPUCCIN_SETTINGS_NS = 'catppuccin'
+ *  `ctx.settingsScope` (see `src/settings-tokyonight.ts`). */
+export const TOKYONIGHT_SETTINGS_NS = 'tokyonight'
 
 /**
  * Profile entry id carrying the plugin (DSH >= 0.1.7-alpha.1): the settings
@@ -55,17 +55,17 @@ export const CATPPUCCIN_SETTINGS_NS = 'catppuccin'
  * PROFILE ENTRY's id, so this constant is the new seam's namespace.
  *
  * It is a CONTRACT with `cordis.patch.yml`: the `insert` row whose `name` is
- * `@nonamelego/dsh-catppuccin` must keep `id: dsh-catppuccin`, because the
+ * `dsh-tokyonight-theme` must keep `id: dsh-tokyonight`, because the
  * Client can only address the form by that id (asserted by
  * `tests/settings-seam.spec.ts`). A user who renames the entry loses the new
  * seam and degrades to localStorage-only — the legacy seam is unaffected,
  * since that namespace is registered by the plugin itself.
  */
-export const CATPPUCCIN_ENTRY_ID = 'dsh-catppuccin'
+export const TOKYONIGHT_ENTRY_ID = 'dsh-tokyonight'
 
 /** State file name under the DSH home (kept next to the Desktop-managed
  *  `cordis.patch.yml` so it survives the Desktop's per-launch port churn). */
-export const STATE_FILENAME = 'catppuccin-state.json'
+export const STATE_FILENAME = 'tokyonight-state.json'
 
 /**
  * Whether a raw settings view carries a user layer at all.
@@ -84,40 +84,38 @@ export function hasUserLayerSection(user: unknown): boolean {
   return typeof user === 'object' && user !== null && !Array.isArray(user) && Object.keys(user).length > 0
 }
 
-/** The four registered Catppuccin theme ids. MUST stay in sync with the
- *  `themeId` of `CATPPUCCIN_FLAVORS` in `src/client/palettes.ts` — guarded by
+/** The three registered TokyoNight theme ids. MUST stay in sync with the
+ *  `themeId` of `TOKYONIGHT_FLAVORS` in `src/client/palettes.ts` — guarded by
  *  `tests/state.spec.ts` — because the persisted flavour value IS the theme id. */
-export const CATPPUCCIN_THEME_IDS = [
-  'catppuccin-latte',
-  'catppuccin-frappe',
-  'catppuccin-macchiato',
-  'catppuccin-mocha',
+export const TOKYONIGHT_THEME_IDS = [
+  'tokyonight-light',
+  'tokyonight-storm',
+  'tokyonight-night',
 ] as const
 
 /** A persisted flavour choice: one registered theme id or `off` (fall back to
  *  the official theme). */
-export type FlavorValue = (typeof CATPPUCCIN_THEME_IDS)[number] | 'off'
+export type FlavorValue = (typeof TOKYONIGHT_THEME_IDS)[number] | 'off'
 
 /**
- * The LIGHT end of "follow the OS" (issue #36). Latte is the only light
- * flavour Catppuccin ships, so the light half is a constant instead of a
+ * The LIGHT end of "follow the OS" (issue #36). Light is the only light
+ * flavour TokyoNight ships, so the light half is a constant instead of a
  * setting — a picker here would offer exactly one real option.
  */
-export const FOLLOW_LIGHT_FLAVOR = 'catppuccin-latte' as const
+export const FOLLOW_LIGHT_FLAVOR = 'tokyonight-light' as const
 
-/** The flavours the follow mode may use for its DARK end. Only the three dark
- *  flavours: Latte here would paint a light palette into the dark half. */
+/** The flavours the follow mode may use for its DARK end. Only the two dark
+ *  flavours: Light here would paint a light palette into the dark half. */
 export const FOLLOW_DARK_FLAVORS = [
-  'catppuccin-frappe',
-  'catppuccin-macchiato',
-  'catppuccin-mocha',
+  'tokyonight-storm',
+  'tokyonight-night',
 ] as const
 
 /** The dark end of follow mode (one of {@link FOLLOW_DARK_FLAVORS}). */
 export type FollowDarkFlavor = (typeof FOLLOW_DARK_FLAVORS)[number]
 
-/** Shipped follow-mode dark end: Mocha, Catppuccin's most common dark pick. */
-export const DEFAULT_FOLLOW_DARK: FollowDarkFlavor = 'catppuccin-mocha'
+/** Shipped follow-mode dark end: Night, TokyoNight's most common dark pick. */
+export const DEFAULT_FOLLOW_DARK: FollowDarkFlavor = 'tokyonight-night'
 
 /** Shipped follow-mode flag: off, i.e. 0.6.x behaviour exactly. */
 export const DEFAULT_FOLLOW_SYSTEM = false
@@ -162,7 +160,7 @@ export interface GlassState {
    * field) resolve to 0 and silently switch the glows off.
    *
    * The ceiling is a PROVISIONAL, deliberately conservative number: the glows
-   * are painted under text, and Latte is the strictest scheme (both glows sit
+   * are painted under text, and Light is the strictest scheme (both glows sit
    * on `#eff1f5`). 200% keeps the brand glow's peak alpha at 24%, which is the
    * last step that plausibly leaves `label-primary` at AA over the brightest
    * patch — the CDP contrast run that pins the real limit is listed as an open
@@ -177,7 +175,7 @@ export interface GlassState {
    * end is the shipped look, so "unchanged" is always reachable without
    * guessing. Enlarging keeps the peak alpha where it was (the radius is
    * geometry, not opacity) and flattens the falloff, which is the answer to
-   * the reporter's real complaint: at 200% strength on Latte the TWO centre
+   * the reporter's real complaint: at 200% strength on Light the TWO centre
    * patches read as "a stuck-on colour dab"; spreading them does not touch the
    * peak, it just stops the light piling up in the corner. It also LOWERS the
    * per-pane variation issue #26 measured, because the gradient slope across a
@@ -208,13 +206,13 @@ export interface GlassState {
 }
 
 /** The whole durable state the plugin persists. */
-export interface CatppuccinState {
+export interface TokyoNightState {
   /** Schema version; anything else is treated as unknown and defaulted. */
   version: typeof STATE_VERSION
   /** Selected flavour (theme id or `off`). */
   flavor: FlavorValue
   /**
-   * Follow the OS light/dark scheme (issue #36): Latte for the light half,
+   * Follow the OS light/dark scheme (issue #36): Light for the light half,
    * {@link followDark} for the dark half.
    *
    * This is a SEPARATE axis from {@link flavor} on purpose. A registered theme
@@ -223,7 +221,7 @@ export interface CatppuccinState {
    * stacks a `{ light, dark }` token layer instead (see `applyFollowLayer` in
    * `src/client/index.ts`). A follow value inside `FlavorValue` would also
    * break the "the persisted value IS the theme id" invariant that
-   * `readFlavor` / `bootPaletteRows` / `CATPPUCCIN_FLAVOR_VALUES` all rely on.
+   * `readFlavor` / `bootPaletteRows` / `TOKYONIGHT_FLAVOR_VALUES` all rely on.
    *
    * Invariant (enforced by `sanitizeState`): `followSystem` is never true
    * while `flavor` is `off` — turning the plugin off must not leave a layer
@@ -244,10 +242,10 @@ export interface CatppuccinState {
   shikiStyle: ShikiStyle
 }
 
-/** The settings-document section: `CatppuccinState` minus the synthetic
+/** The settings-document section: `TokyoNightState` minus the synthetic
  *  `version` field — the official seam resolves defaults, composition and the
  *  user layer itself, so no plugin-side version is stored. */
-export interface CatppuccinSettingsSection {
+export interface TokyoNightSettingsSection {
   /** Selected flavour (theme id or `off`). */
   flavor: FlavorValue
   /** Follow the OS light/dark scheme (issue #36). */
@@ -278,8 +276,8 @@ export const GLASS_GAP_MIN = 4
 export const GLASS_GAP_MAX = 24
 /** Upper bound of the ground-glow strength (issue #32), in percent of the
  *  shipped look. A contrast budget, not a taste number: the glows are painted
- *  under text and Latte is the strictest scheme. Evidence now exists — the
- *  reporter measured body text on Latte at 100% ≈ 6.1:1 and 200% ≈ 5.7:1
+ *  under text and Light is the strictest scheme. Evidence now exists — the
+ *  reporter measured body text on Light at 100% ≈ 6.1:1 and 200% ≈ 5.7:1
  *  (both AA; the top-bar label 4.3 → 4.2 was already low before the glows), so
  *  200% stays. Raise it only with a new measurement; see
  *  {@link GlassState.glowStrength} and `docs/issue-32-glow-tuning.md` §6. */
@@ -322,15 +320,15 @@ export const DEFAULT_GLASS: GlassState = {
   glow: false,
 }
 
-/** Shipped update-check preference: automatic checks on. */
+/** Legacy compatibility field; update checking is no longer active. */
 export const DEFAULT_AUTO_CHECK = true
-/** Shipped update-check channel: chase the stable `latest` tag. */
+/** Legacy compatibility channel; no active updater consumes it. */
 export const DEFAULT_UPDATE_CHANNEL: UpdateChannel = 'latest'
 /** Shipped syntax-highlighting style. */
 export const DEFAULT_SHIKI_STYLE: ShikiStyle = 'default'
 
-/** A fully default state: no Catppuccin flavour and no glass. */
-export function defaultState(): CatppuccinState {
+/** A fully default state: no TokyoNight flavour and no glass. */
+export function defaultState(): TokyoNightState {
   return {
     version: STATE_VERSION,
     flavor: 'off',
@@ -388,13 +386,13 @@ function clampFinite(value: unknown, min: number, max: number, fallback: number)
  * both read and write so a corrupt file or a hand-crafted payload can never
  * poison the plugin's settings.
  */
-export function sanitizeState(input: unknown): CatppuccinState {
+export function sanitizeState(input: unknown): TokyoNightState {
   const state = defaultState()
   if (typeof input !== 'object' || input === null) return state
   const raw = input as Record<string, unknown>
 
   const flavor = raw.flavor
-  if (typeof flavor === 'string' && (CATPPUCCIN_THEME_IDS as readonly string[]).includes(flavor)) {
+  if (typeof flavor === 'string' && (TOKYONIGHT_THEME_IDS as readonly string[]).includes(flavor)) {
     state.flavor = flavor as FlavorValue
   } else if (flavor === 'off') {
     state.flavor = 'off'
@@ -402,7 +400,7 @@ export function sanitizeState(input: unknown): CatppuccinState {
 
   // Issue #36: the follow-mode pair. Absent fields keep their shipped
   // defaults, so a document written by 0.6.x rolls forward untouched.
-  // `followDark` is restricted to the three DARK flavours — Latte would paint
+  // `followDark` is restricted to the three DARK flavours — Light would paint
   // a light palette into the dark half of the layer.
   const followDark = raw.followDark
   state.followDark = typeof followDark === 'string' && (FOLLOW_DARK_FLAVORS as readonly string[]).includes(followDark)
@@ -411,7 +409,7 @@ export function sanitizeState(input: unknown): CatppuccinState {
   state.followSystem = raw.followSystem === true
   // Invariant: "off" wins over follow. Turning the plugin off must retire the
   // layer, or a document could keep `followSystem: true` while the user asked
-  // for the official theme — the layer would keep painting Catppuccin tokens.
+  // for the official theme — the layer would keep painting TokyoNight tokens.
   if (state.flavor === 'off') state.followSystem = false
 
   const glass = typeof raw.glass === 'object' && raw.glass !== null
@@ -455,7 +453,7 @@ export function sanitizeState(input: unknown): CatppuccinState {
  * nuked — a downgrade never destroys user state. The version-upgrade
  * convention lives in `docs/state-migrations.md` (item Y).
  */
-export function migrate(raw: unknown): CatppuccinState {
+export function migrate(raw: unknown): TokyoNightState {
   if (typeof raw !== 'object' || raw === null) return defaultState()
   const record = raw as Record<string, unknown>
   const version = typeof record.version === 'number' ? record.version : 1
@@ -470,7 +468,7 @@ export function migrate(raw: unknown): CatppuccinState {
 /** Whether a normalized state carries nothing beyond the shipped defaults —
  *  i.e. the user never actually chose anything worth persisting. Used to tell
  *  "no durable state yet" apart from "an explicit default choice". */
-export function isDefaultState(state: CatppuccinState): boolean {
+export function isDefaultState(state: TokyoNightState): boolean {
   const expected = defaultState()
   return state.flavor === expected.flavor
     && state.followSystem === expected.followSystem
@@ -492,7 +490,7 @@ export function isDefaultState(state: CatppuccinState): boolean {
 
 /** Default settings-document section: no flavour and no glass (mirrors
  *  `defaultState()` minus the synthetic `version`). */
-export function defaultSettingsSection(): CatppuccinSettingsSection {
+export function defaultSettingsSection(): TokyoNightSettingsSection {
   return {
     flavor: 'off',
     followSystem: DEFAULT_FOLLOW_SYSTEM,
@@ -506,7 +504,7 @@ export function defaultSettingsSection(): CatppuccinSettingsSection {
 }
 
 /** Drop the synthetic `version` field: full state → settings-document section. */
-export function settingsSectionFromState(state: CatppuccinState): CatppuccinSettingsSection {
+export function settingsSectionFromState(state: TokyoNightState): TokyoNightSettingsSection {
   return {
     flavor: state.flavor,
     followSystem: state.followSystem,
@@ -521,7 +519,7 @@ export function settingsSectionFromState(state: CatppuccinState): CatppuccinSett
 
 /** Lift a settings-document section back into the full state-shaped contract
  *  (re-sanitized so a hand-edited document can never poison the plugin). */
-export function stateFromSettingsSection(section: CatppuccinSettingsSection): CatppuccinState {
+export function stateFromSettingsSection(section: TokyoNightSettingsSection): TokyoNightState {
   return sanitizeState(section)
 }
 
@@ -535,7 +533,7 @@ export function sameOverrides(a: Record<string, string>, b: Record<string, strin
 
 /** Whether two settings sections are field-for-field equal (used to skip
  *  redundant mirror writes and to recognize the Host echoing our own write). */
-export function settingsSectionsEqual(a: CatppuccinSettingsSection, b: CatppuccinSettingsSection): boolean {
+export function settingsSectionsEqual(a: TokyoNightSettingsSection, b: TokyoNightSettingsSection): boolean {
   return a.flavor === b.flavor
     && a.followSystem === b.followSystem
     && a.followDark === b.followDark
@@ -574,7 +572,7 @@ export function settingsSectionsEqual(a: CatppuccinSettingsSection, b: Catppucci
  * keeps the document's value, and `changed === false` tells the caller to take
  * the ordinary "document wins" adoption path instead of writing anything.
  *
- * ⚠️ Every field of {@link CatppuccinSettingsSection} must be carried here.
+ * ⚠️ Every field of {@link TokyoNightSettingsSection} must be carried here.
  * A missing one is SILENT in both directions — a boot-window change to it is
  * dropped, and (because the caller's whole-state fallback is gone) nothing
  * else would notice. Same rule as `stateToMutateOps` (issue #26), and
@@ -592,10 +590,10 @@ export function settingsSectionsEqual(a: CatppuccinSettingsSection, b: Catppucci
  * @returns the merged state plus whether anything actually differed.
  */
 export function replayLocalChanges(
-  document: CatppuccinState,
-  baseline: CatppuccinSettingsSection,
-  local: CatppuccinSettingsSection,
-): { state: CatppuccinState; changed: boolean } {
+  document: TokyoNightState,
+  baseline: TokyoNightSettingsSection,
+  local: TokyoNightSettingsSection,
+): { state: TokyoNightState; changed: boolean } {
   // A fresh section (glass/overrides cloned) so the caller's document state is
   // never mutated in place.
   const merged = settingsSectionFromState(document)

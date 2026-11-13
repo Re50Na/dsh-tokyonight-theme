@@ -37,7 +37,7 @@ import {
 } from '../src/client/state-sync.ts'
 import type { SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
 import { STATE_VERSION, defaultSettingsSection, defaultState, settingsSectionFromState } from '../src/state.ts'
-import type { CatppuccinSettingsSection, CatppuccinState } from '../src/state.ts'
+import type { TokyoNightSettingsSection, TokyoNightState } from '../src/state.ts'
 
 beforeEach(() => {
   localStorage.clear()
@@ -48,33 +48,33 @@ afterEach(() => cancelDurablePersist())
 
 describe('flavour choice', () => {
   it('maps registered theme ids to themselves and everything else to off', () => {
-    expect(flavorFromThemeId('catppuccin-mocha')).toBe('catppuccin-mocha')
-    expect(flavorFromThemeId('catppuccin-latte')).toBe('catppuccin-latte')
+    expect(flavorFromThemeId('tokyonight-night')).toBe('tokyonight-night')
+    expect(flavorFromThemeId('tokyonight-light')).toBe('tokyonight-light')
     expect(flavorFromThemeId('system')).toBe('off')
     expect(flavorFromThemeId('dark')).toBe('off')
     expect(flavorFromThemeId('')).toBe('off')
   })
 
   it('flavorInfo returns the registered entry only', () => {
-    expect(flavorInfo('catppuccin-mocha')?.themeId).toBe('catppuccin-mocha')
+    expect(flavorInfo('tokyonight-night')?.themeId).toBe('tokyonight-night')
     expect(flavorInfo('dark')).toBeUndefined()
   })
 
   it('reads back a persisted flavour; absent or unknown values mean off', () => {
     expect(readFlavor()).toBe('off')
-    writeFlavor('catppuccin-frappe')
-    expect(readFlavor()).toBe('catppuccin-frappe')
+    writeFlavor('tokyonight-storm')
+    expect(readFlavor()).toBe('tokyonight-storm')
     localStorage.setItem(FLAVOR_STORAGE_KEY, 'not-a-flavour')
     expect(readFlavor()).toBe('off')
   })
 })
 
 describe('built-in preference restore', () => {
-  it('remembers built-in preferences and ignores Catppuccin ones', () => {
+  it('remembers built-in preferences and ignores TokyoNight ones', () => {
     rememberBuiltinPreference('light')
     expect(localStorage.getItem(RESTORE_STORAGE_KEY)).toBe('light')
     // A flavour observation must not clobber the recorded built-in choice.
-    rememberBuiltinPreference('catppuccin-mocha')
+    rememberBuiltinPreference('tokyonight-night')
     expect(localStorage.getItem(RESTORE_STORAGE_KEY)).toBe('light')
     rememberBuiltinPreference('system')
     expect(localStorage.getItem(RESTORE_STORAGE_KEY)).toBe('system')
@@ -113,8 +113,8 @@ describe('builtinPickWins (issue #6 restore guard)', () => {
     // parameter is typed narrowly (BuiltinPreference) on purpose — the test
     // reaches for that parameter type instead of widening production.
     type LivePick = Parameters<typeof builtinPickWins>[1]
-    expect(builtinPickWins('catppuccin-latte', 'catppuccin-latte' as LivePick)).toBe(false)
-    expect(builtinPickWins('catppuccin-mocha', null)).toBe(false)
+    expect(builtinPickWins('tokyonight-light', 'tokyonight-light' as LivePick)).toBe(false)
+    expect(builtinPickWins('tokyonight-night', null)).toBe(false)
   })
 })
 
@@ -148,7 +148,7 @@ describe('overridesSnapshot stability', () => {
 })
 
 /** Build a settings snapshot fixture (host-mode, resolved). */
-function hostSnapshot(value: CatppuccinSettingsSection, user?: unknown): DurableSnapshot<CatppuccinSettingsSection> {
+function hostSnapshot(value: TokyoNightSettingsSection, user?: unknown): DurableSnapshot<TokyoNightSettingsSection> {
   return {
     status: 'ready',
     value,
@@ -164,9 +164,9 @@ function hostSnapshot(value: CatppuccinSettingsSection, user?: unknown): Durable
  *  adapter hides (user-layer predicate, write fence) are irrelevant here: this
  *  double stands in for the bound channel itself. */
 function scopeDouble(options: {
-  snapshot?: DurableSnapshot<CatppuccinSettingsSection>
+  snapshot?: DurableSnapshot<TokyoNightSettingsSection>
   write?: () => Promise<WriteOutcome>
-} = {}): { scope: DurableScope<CatppuccinSettingsSection>; mutations: unknown[][] } {
+} = {}): { scope: DurableScope<TokyoNightSettingsSection>; mutations: unknown[][] } {
   const mutations: unknown[][] = []
   return {
     mutations,
@@ -212,12 +212,12 @@ describe('durableStateFromSnapshot', () => {
 describe('persistStateToScope', () => {
   it('writes one atomic mutation covering the whole section', async () => {
     const { scope, mutations } = scopeDouble()
-    const state = { ...defaultState(), flavor: 'catppuccin-latte' as never, glass: { ...defaultState().glass, blur: 77 } }
+    const state = { ...defaultState(), flavor: 'tokyonight-light' as never, glass: { ...defaultState().glass, blur: 77 } }
     expect(await persistStateToScope(scope, state)).toBe('written')
     expect(mutations).toHaveLength(1)
     const ops = mutations[0] as { op: string; path: string[]; value: unknown }[]
     const byPath = Object.fromEntries(ops.map((op) => [op.path.join('.'), op.value]))
-    expect(byPath['flavor']).toBe('catppuccin-latte')
+    expect(byPath['flavor']).toBe('tokyonight-light')
     expect(byPath['glass.blur']).toBe(77)
     expect(byPath['glass.enabled']).toBe(false)
     expect(byPath['autoCheck']).toBe(true)
@@ -238,7 +238,7 @@ describe('persistStateToScope', () => {
     const { scope, mutations } = scopeDouble()
     const state = {
       ...defaultState(),
-      flavor: 'catppuccin-latte' as const,
+      flavor: 'tokyonight-light' as const,
       glass: { ...defaultState().glass, glow: true },
     }
     expect(await persistStateToScope(scope, state)).toBe('written')
@@ -262,7 +262,7 @@ describe('persistStateToScope', () => {
   })
 
   it('reports error when the write fails at the transport layer', async () => {
-    const local = { ...defaultState(), flavor: 'catppuccin-mocha' as never }
+    const local = { ...defaultState(), flavor: 'tokyonight-night' as never }
     const flaky = scopeDouble({
       snapshot: hostSnapshot(defaultSettingsSection()),
       write: () => Promise.resolve('failed'),
@@ -273,7 +273,7 @@ describe('persistStateToScope', () => {
   it('reports stale when the channel reports a refused write (item C/X)', async () => {
     // Only the 0.1.7+ channel can report this: the legacy controller resolves
     // a refused write silently, which is why the read-side guard exists.
-    const local = { ...defaultState(), flavor: 'catppuccin-mocha' as never }
+    const local = { ...defaultState(), flavor: 'tokyonight-night' as never }
     const scope = scopeDouble({
       snapshot: hostSnapshot(defaultSettingsSection()),
       write: () => Promise.resolve('refused'),
@@ -282,7 +282,7 @@ describe('persistStateToScope', () => {
   })
 
   it('is a noop when the local state already equals the document', async () => {
-    const local = { ...defaultState(), flavor: 'catppuccin-mocha' as never }
+    const local = { ...defaultState(), flavor: 'tokyonight-night' as never }
     const { scope, mutations } = scopeDouble({ snapshot: hostSnapshot(settingsSectionFromState(local)) })
     expect(await persistStateToScope(scope, local)).toBe('noop')
     expect(mutations).toHaveLength(0)
@@ -290,7 +290,7 @@ describe('persistStateToScope', () => {
 
   it('writes when the base revision matches the snapshot (no remote movement)', async () => {
     const { scope, mutations } = scopeDouble({ snapshot: { ...hostSnapshot(defaultSettingsSection()), revision: 7 } })
-    const state = { ...defaultState(), flavor: 'catppuccin-mocha' as never }
+    const state = { ...defaultState(), flavor: 'tokyonight-night' as never }
     expect(await persistStateToScope(scope, state, { baseRevision: 7 })).toBe('written')
     expect(mutations).toHaveLength(1)
   })
@@ -299,11 +299,11 @@ describe('persistStateToScope', () => {
     // Tab B committed a newer document: the snapshot revision moved from the
     // base (3) our local state was derived from to 4, and the remote section
     // is NOT our own last-written echo — the local write would clobber it.
-    const remote = settingsSectionFromState({ ...defaultState(), flavor: 'catppuccin-mocha' as never })
+    const remote = settingsSectionFromState({ ...defaultState(), flavor: 'tokyonight-night' as never })
     const { scope, mutations } = scopeDouble({
       snapshot: { ...hostSnapshot(remote), revision: 4 },
     })
-    const state = { ...defaultState(), flavor: 'catppuccin-latte' as never }
+    const state = { ...defaultState(), flavor: 'tokyonight-light' as never }
     const outcome = await persistStateToScope(scope, state, { baseRevision: 3 })
     expect(outcome).toBe('stale')
     expect(mutations).toHaveLength(0)
@@ -312,11 +312,11 @@ describe('persistStateToScope', () => {
   it('still writes when the revision moved but the remote equals our own last write (echo)', async () => {
     // Our own just-committed write folded back into the mirror: remote is
     // the very section we wrote last, so the movement is not a conflict.
-    const ours = settingsSectionFromState({ ...defaultState(), flavor: 'catppuccin-latte' as never })
+    const ours = settingsSectionFromState({ ...defaultState(), flavor: 'tokyonight-light' as never })
     const { scope, mutations } = scopeDouble({
       snapshot: { ...hostSnapshot(ours), revision: 4 },
     })
-    const state = { ...defaultState(), flavor: 'catppuccin-mocha' as never }
+    const state = { ...defaultState(), flavor: 'tokyonight-night' as never }
     const outcome = await persistStateToScope(scope, state, { baseRevision: 3, lastWrittenSection: ours })
     expect(outcome).toBe('written')
     expect(mutations).toHaveLength(1)
@@ -352,14 +352,14 @@ describe('createBaseRevisionTracker (audit F2)', () => {
     // Timeline: we scheduled at revision 3, tab B committed a newer document
     // (revision 4) before the debounce elapsed. With the base captured at
     // SCHEDULE time the flush is abandoned as stale.
-    const remote = settingsSectionFromState({ ...defaultState(), flavor: 'catppuccin-latte' as never })
+    const remote = settingsSectionFromState({ ...defaultState(), flavor: 'tokyonight-light' as never })
     const { scope, mutations } = scopeDouble({ snapshot: { ...hostSnapshot(remote), revision: 4 } })
     const tracker = createBaseRevisionTracker()
     let revision = 3
     tracker.capture(() => revision) // ← schedule time
     revision = 4 // ← tab B's write lands during the debounce
 
-    const state = { ...defaultState(), flavor: 'catppuccin-mocha' as never }
+    const state = { ...defaultState(), flavor: 'tokyonight-night' as never }
     expect(await persistStateToScope(scope, state, { baseRevision: tracker.take() })).toBe('stale')
     expect(mutations).toHaveLength(0)
 
@@ -381,7 +381,7 @@ describe('createBaseRevisionTracker (audit F2)', () => {
  * fence — which is exactly why the fast-switching bug could not show up in it.
  */
 function fencedScopeDouble(initialRevision: number): {
-  scope: DurableScope<CatppuccinSettingsSection>
+  scope: DurableScope<TokyoNightSettingsSection>
   /** The revision each write actually committed under (or was refused at). */
   fences: number[]
 } {
@@ -392,7 +392,7 @@ function fencedScopeDouble(initialRevision: number): {
   let generation = 0
   const fences: number[] = []
   /** Decode the atomic op list the way the Host folds it back. */
-  const sectionFromOps = (ops: readonly SettingsPathOpView[]): CatppuccinSettingsSection => {
+  const sectionFromOps = (ops: readonly SettingsPathOpView[]): TokyoNightSettingsSection => {
     const draft = JSON.parse(JSON.stringify(defaultSettingsSection())) as Record<string, unknown>
     for (const op of ops) {
       if (op.op !== 'set') continue
@@ -401,7 +401,7 @@ function fencedScopeDouble(initialRevision: number): {
       if (rest.length === 0) draft[head] = op.value
       else (draft[head] as Record<string, unknown>)[rest.join('.')] = op.value
     }
-    return draft as unknown as CatppuccinSettingsSection
+    return draft as unknown as TokyoNightSettingsSection
   }
   return {
     fences,
@@ -438,7 +438,7 @@ function fencedScopeDouble(initialRevision: number): {
 }
 
 describe('persistStateToScope — the write fence (fast switching, 2026-10-01)', () => {
-  const withGlassMode = (mode: 'mica' | 'compat'): CatppuccinState => ({
+  const withGlassMode = (mode: 'mica' | 'compat'): TokyoNightState => ({
     ...defaultState(),
     glass: { ...defaultState().glass, enabled: true, mode },
   })
@@ -490,7 +490,7 @@ describe('persistStateToScope — the write fence (fast switching, 2026-10-01)',
 describe('readExplicitFlavorOff (audit F4)', () => {
   it('is true only for a literal off — an absent value is not a choice', () => {
     expect(readExplicitFlavorOff()).toBe(false)
-    writeFlavor('catppuccin-mocha')
+    writeFlavor('tokyonight-night')
     expect(readExplicitFlavorOff()).toBe(false)
     writeFlavor('off')
     expect(readExplicitFlavorOff()).toBe(true)
@@ -501,14 +501,14 @@ describe('scheduleDurablePersist debounce', () => {
   it('coalesces a burst into one flush of the freshest write', async () => {
     vi.useFakeTimers()
     const writes: string[] = []
-    let value = 'catppuccin-latte'
+    let value = 'tokyonight-light'
     scheduleDurablePersist(() => { writes.push(value) }, 300)
-    value = 'catppuccin-mocha'
+    value = 'tokyonight-night'
     scheduleDurablePersist(() => { writes.push(value) }, 300)
     await vi.advanceTimersByTimeAsync(299)
     expect(writes).toHaveLength(0)
     await vi.advanceTimersByTimeAsync(1)
-    expect(writes).toEqual(['catppuccin-mocha'])
+    expect(writes).toEqual(['tokyonight-night'])
   })
 
   it('cancelDurablePersist drops the queued write', async () => {
@@ -544,7 +544,7 @@ describe('host menu blur probe (0.1.7 vs the 0.1.5 latest line)', () => {
       '--dsw-menu-backdrop-filter': 'blur(40px) saturate(150%)',
     })
     expect(hostHasMenuBlur()).toBe(true)
-    // {} means "leave palettes.ts alone" — the translucent Catppuccin fill.
+    // {} means "leave palettes.ts alone" — the translucent TokyoNight fill.
     expect(menuSurfaceFor(true)).toEqual({})
   })
 

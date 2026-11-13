@@ -16,8 +16,8 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import type { InstallSource } from './update-check.ts'
-import { PACKAGE_NAME } from './update-check.ts'
+export type InstallSource = 'registry' | 'link' | 'file' | 'git' | 'unknown'
+import { PACKAGE_NAME } from './identity.ts'
 
 /** Fallback profile name when nothing can be probed (keeps the command valid). */
 export const FALLBACK_PROFILE = 'web'

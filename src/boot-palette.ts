@@ -1,6 +1,6 @@
 /**
  * Pre-paint palette: the flavour's `--dsw-*` table, injected into the index
- * HTML so the FIRST frame is already Catppuccin (issue #30 补充, 2026-10-27).
+ * HTML so the FIRST frame is already TokyoNight (issue #30 补充, 2026-10-27).
  *
  * Why this exists. The official `dsh-client-ui-theme` Host half contributes two
  * boot rows through `webserver/index-inject` (prepended): a head `<style>`
@@ -8,10 +8,10 @@
  * and a body script that sets `data-ds-dark-theme` for the durable built-in
  * preference. Those decide the colour of everything BEFORE any script runs.
  * Our flavours can only be `theme.register()`ed and `setTheme()`d by the
- * Client bundle, i.e. strictly after first paint — so a Catppuccin user sees
+ * Client bundle, i.e. strictly after first paint — so a TokyoNight user sees
  * the official dark (or light) canvas flash first. Measured by the reporter on
  * 0.6.4 (CPU 3x, fresh browser): first-frame centre pixel `#151517`, official
- * dark, with `flavor: catppuccin-frappe` persisted.
+ * dark, with `flavor: tokyonight-storm` persisted.
  *
  * The fix mirrors the official rows: paint the same document canvas with the
  * flavour's own token table, and let the Client remove the sheet the moment the
@@ -37,11 +37,11 @@
  *    document, so injecting from it would paint the wrong palette — those hosts
  *    get no rows at all (`bootPaletteRows` returns `[]`).
  */
-import { CATPPUCCIN_FLAVORS, type CatppuccinFlavorInfo } from './client/palettes.ts'
+import { TOKYONIGHT_FLAVORS, type TokyoNightFlavorInfo } from './client/palettes.ts'
 import { FOLLOW_LIGHT_FLAVOR } from './state.ts'
 
 /** Attribute marking the injected `<style>` so the Client can find it. */
-export const BOOT_PALETTE_ATTR = 'data-dsh-catppuccin-boot'
+export const BOOT_PALETTE_ATTR = 'data-dsh-tokyonight-boot'
 
 /** One index-injection row, structurally typed (the host package is not a
  *  dependency of this plugin, so the shape is declared here — same reasoning as
@@ -105,7 +105,7 @@ export function cssSafeOverrides(raw: unknown): Record<string, string> {
 
 /** The declaration block for one flavour: every token, then the user overrides
  *  (last wins), then the canvas colour the boot splash reads. */
-function declarationBlock(flavor: CatppuccinFlavorInfo, overrides: Record<string, string>): string {
+function declarationBlock(flavor: TokyoNightFlavorInfo, overrides: Record<string, string>): string {
   const tokens = Object.entries(flavor.tokens).map(([name, value]) => `${name}:${value}`)
   const extra = Object.entries(overrides).map(([name, value]) => `${name}:${value}`)
   return [...tokens, ...extra, 'background-color:var(--dsw-alias-bg-base)'].join(';')
@@ -123,7 +123,7 @@ function declarationBlock(flavor: CatppuccinFlavorInfo, overrides: Record<string
  * @returns a complete `<style>…</style>` fragment for a `kind: 'html'` row.
  */
 export function bootPaletteStyle(
-  flavor: CatppuccinFlavorInfo,
+  flavor: TokyoNightFlavorInfo,
   overrides: Record<string, string> = {},
 ): string {
   // `color-scheme` follows the flavour so scrollbars, form controls and the
@@ -143,12 +143,12 @@ export function bootPaletteStyle(
  * @param flavor - the persisted flavour.
  * @returns the script text for a `kind: 'script'` row.
  */
-export function bootPaletteScript(flavor: CatppuccinFlavorInfo): string {
+export function bootPaletteScript(flavor: TokyoNightFlavorInfo): string {
   return `(()=>{document.body.toggleAttribute('data-ds-dark-theme',${flavor.colorScheme === 'dark'})})()`
 }
 
 /**
- * The pre-paint sheet for FOLLOW mode (issue #36): the light half (Latte) is
+ * The pre-paint sheet for FOLLOW mode (issue #36): the light half (Light) is
  * the default block and the dark half sits behind `prefers-color-scheme`.
  *
  * Why a media query works here and NOT in the Client: this sheet is plain CSS
@@ -160,15 +160,15 @@ export function bootPaletteScript(flavor: CatppuccinFlavorInfo): string {
  * The dark block is emitted AFTER the light one so it wins on equal
  * specificity, and it also matches `[data-ds-dark-theme]` so a stale official
  * body script cannot leave the light table in force on a dark OS.
- * @param light - the light flavour (Latte).
+ * @param light - the light flavour (Light).
  * @param dark - the persisted follow-mode dark flavour.
  * @param overrides - already filtered by {@link cssSafeOverrides}; applied to
  *  BOTH halves (a user override is scheme-agnostic by contract).
  * @returns a complete `<style>…</style>` fragment for a `kind: 'html'` row.
  */
 export function followPaletteStyle(
-  light: CatppuccinFlavorInfo,
-  dark: CatppuccinFlavorInfo,
+  light: TokyoNightFlavorInfo,
+  dark: TokyoNightFlavorInfo,
   overrides: Record<string, string> = {},
 ): string {
   const lightBlock = declarationBlock(light, overrides)
@@ -198,7 +198,7 @@ export function followPaletteScript(): string {
  *
  * Follow mode (issue #36) replaces the fixed-flavour rows with the two-half
  * sheet; it still requires a persisted flavour, because follow mode is a
- * modifier on a Catppuccin choice, never a way to paint Catppuccin while the
+ * modifier on a TokyoNight choice, never a way to paint TokyoNight while the
  * document says `off`.
  * @param config - the plugin config the Loader hands `apply`.
  * @returns rows to `push` into the `webserver/index-inject` table.
@@ -206,13 +206,13 @@ export function followPaletteScript(): string {
 export function bootPaletteRows(config: BootPaletteConfig | undefined): BootPaletteRow[] {
   const flavorId = readVolatile(config?.flavor)
   if (typeof flavorId !== 'string') return []
-  const flavor = CATPPUCCIN_FLAVORS.find((candidate) => candidate.themeId === flavorId)
+  const flavor = TOKYONIGHT_FLAVORS.find((candidate) => candidate.themeId === flavorId)
   if (flavor === undefined) return []
   const overrides = cssSafeOverrides(readVolatile(config?.overrides))
   if (readVolatile(config?.followSystem) === true) {
-    const light = CATPPUCCIN_FLAVORS.find((candidate) => candidate.themeId === FOLLOW_LIGHT_FLAVOR)
+    const light = TOKYONIGHT_FLAVORS.find((candidate) => candidate.themeId === FOLLOW_LIGHT_FLAVOR)
     const darkId = readVolatile(config?.followDark)
-    const dark = CATPPUCCIN_FLAVORS.find((candidate) => (
+    const dark = TOKYONIGHT_FLAVORS.find((candidate) => (
       candidate.themeId === darkId && candidate.colorScheme === 'dark'
     ))
     // A malformed dark half falls back to the fixed-flavour sheet rather than

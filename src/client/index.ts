@@ -1,16 +1,16 @@
 /**
- * Catppuccin themes for the DeepSeek Harness web GUI — browser half.
+ * TokyoNight themes for the DeepSeek Harness web GUI — browser half.
  *
- * Registers the four Catppuccin flavours (Latte light / Frappé, Macchiato,
- * Mocha dark) into the official ThemeRuntime, so they become selectable
+ * Registers the three TokyoNight flavours (Light light / Storm, Storm,
+ * Night dark) into the official ThemeRuntime, so they become selectable
  * themes whose --dsw-* token overrides fully remap the UI palette. The
  * official Appearance row persists only the built-in light/dark/system
- * preferences, so this plugin also owns a settings row ("Catppuccin") that
- * lists the four flavours; selecting one switches the theme and persists the
+ * preferences, so this plugin also owns a settings row ("TokyoNight") that
+ * lists the three flavours; selecting one switches the theme and persists the
  * flavour.
  *
  * Persistence is two-tier since 0.5.0. The choice lives in two stores:
- *  - localStorage keys (`dsh.catppuccin.*`) — the in-browser cache: instant
+ *  - localStorage keys (`dsh.tokyonight.*`) — the in-browser cache: instant
  *    restore at boot, the cross-tab `storage` event bus, and the fallback
  *    when the settings transport is unavailable;
  *  - the official settings seam (registered/declared by the Host half in
@@ -20,7 +20,7 @@
  *    0.1.7-alpha.1 — see `src/client/state-sync.ts`). It exists because
  *    localStorage is per-browser and per-origin while the DSH home is the
  *    machine-wide truth (full rationale in `src/state.ts`). The pre-0.5.0
- *    Host file + `/catppuccin/state` route are gone — the Host migrates the
+ *    Host file + `/tokyonight/state` route are gone — the Host migrates the
  *    old file into the store once.
  * At boot the plugin fast-applies localStorage, then hydrates from the scope
  * snapshot once it resolves and mirrors it back into localStorage; if the
@@ -44,21 +44,19 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 // Type-only: pulls the settings-surface SlotMap merge (settings.general.item)
 // and, on 0.1.7+, the configForms Context merge the durable scope binds.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
-import type { CatppuccinRowInjected } from './CatppuccinRow.tsx'
-import { CatppuccinDetailCard, type CatppuccinDetailCardInjected } from './detail-card.tsx'
-import { CatppuccinSettingsPage, type CatppuccinSettingsPageInjected } from './settings-section.tsx'
-import { de, en, es, fr, ja, ko, zh, type CatppuccinKey } from './locales.ts'
-import { CATPPUCCIN_FLAVORS, type CatppuccinFlavorId, type CatppuccinFlavorInfo } from './palettes.ts'
+import type { TokyoNightRowInjected } from './TokyoNightRow.tsx'
+import { TokyoNightDetailCard, type TokyoNightDetailCardInjected } from './detail-card.tsx'
+import { TokyoNightSettingsPage, type TokyoNightSettingsPageInjected } from './settings-section.tsx'
+import { de, en, es, fr, ja, ko, zh, type TokyoNightKey } from './locales.ts'
+import { TOKYONIGHT_FLAVORS, type TokyoNightFlavorId, type TokyoNightFlavorInfo } from './palettes.ts'
 import { clearBootPalette } from './boot-palette.ts'
 import { SHIKI_TOKENS } from './shiki-tokens.ts'
 import { GlassLayer } from './glass/glass-layer.ts'
 import type { GlassRowInjected } from './glass/glass-row.tsx'
-import type { UpdateRowInjected } from './UpdateRow.tsx'
-import type { UpdateCheckPayload } from '../update-check.ts'
-import { PACKAGE_NAME, UPDATE_CHECK_CLIENT_TIMEOUT_MS, UPDATE_ROUTE_PATH } from '../update-check.ts'
+import { PACKAGE_NAME } from '../identity.ts'
 import { tolerantRegistration } from '../registration-tolerance.ts'
 import {
-  CATPPUCCIN_ENTRY_ID,
+  TOKYONIGHT_ENTRY_ID,
   DEFAULT_AUTO_CHECK,
   DEFAULT_FOLLOW_DARK,
   DEFAULT_SHIKI_STYLE,
@@ -72,8 +70,8 @@ import {
   settingsSectionFromState,
   settingsSectionsEqual,
   STATE_VERSION,
-  type CatppuccinSettingsSection,
-  type CatppuccinState,
+  type TokyoNightSettingsSection,
+  type TokyoNightState,
   type FlavorValue,
   type FollowDarkFlavor,
   type ShikiStyle,
@@ -94,65 +92,65 @@ import {
 // tag on enable/disable — item II (lazy glass CSS).
 
 /** Locale namespace owned by this plugin. */
-export const NS = 'catppuccin'
+export const NS = 'tokyonight'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
-    /** The Catppuccin settings row's copy. */
-    catppuccin: CatppuccinKey
+    /** The TokyoNight settings row's copy. */
+    tokyonight: TokyoNightKey
   }
 }
 
 /** localStorage key carrying the persisted flavour choice. */
-export const FLAVOR_STORAGE_KEY = 'dsh.catppuccin.flavor'
+export const FLAVOR_STORAGE_KEY = 'dsh.tokyonight.flavor'
 
 /** localStorage key recording the last built-in theme preference. */
-export const RESTORE_STORAGE_KEY = 'dsh.catppuccin.restore'
+export const RESTORE_STORAGE_KEY = 'dsh.tokyonight.restore'
 
 /** localStorage key carrying the auto-check update preference (item H). */
-export const AUTO_CHECK_KEY = 'dsh.catppuccin.autoCheck'
+export const AUTO_CHECK_KEY = 'dsh.tokyonight.autoCheck'
 
 /** localStorage key carrying the update channel preference (item I). */
-export const UPDATE_CHANNEL_KEY = 'dsh.catppuccin.updateChannel'
+export const UPDATE_CHANNEL_KEY = 'dsh.tokyonight.updateChannel'
 
 /** localStorage key carrying the user token overrides JSON (item K). */
-export const OVERRIDES_KEY = 'dsh.catppuccin.overrides'
+export const OVERRIDES_KEY = 'dsh.tokyonight.overrides'
 
 /** localStorage key carrying the shiki style preference (item M). */
-export const SHIKI_STYLE_KEY = 'dsh.catppuccin.shikiStyle'
+export const SHIKI_STYLE_KEY = 'dsh.tokyonight.shikiStyle'
 
 /** localStorage key carrying the follow-the-OS flag (issue #36). */
-export const FOLLOW_SYSTEM_KEY = 'dsh.catppuccin.followSystem'
+export const FOLLOW_SYSTEM_KEY = 'dsh.tokyonight.followSystem'
 
 /** localStorage key carrying the follow-mode dark half (issue #36). */
-export const FOLLOW_DARK_KEY = 'dsh.catppuccin.followDark'
+export const FOLLOW_DARK_KEY = 'dsh.tokyonight.followDark'
 
-/** Accepted flavour values — the four registered theme ids plus `off`. These
+/** Accepted flavour values — the three registered theme ids plus `off`. These
  *  MUST stay in sync with the registered themes (guarded by
  *  tests/palettes.spec.ts) because the persisted value is the theme id. */
-export const CATPPUCCIN_FLAVOR_VALUES = [
-  ...CATPPUCCIN_FLAVORS.map((f) => f.themeId),
+export const TOKYONIGHT_FLAVOR_VALUES = [
+  ...TOKYONIGHT_FLAVORS.map((f) => f.themeId),
   'off',
 ] as const
 
 /** `off` means: fall back to the official theme (default). */
-export type FlavorChoice = (typeof CATPPUCCIN_FLAVOR_VALUES)[number]
+export type FlavorChoice = (typeof TOKYONIGHT_FLAVOR_VALUES)[number]
 
 /** The flavour whose themeId this is, or `off`. */
 export function flavorFromThemeId(themeId: string): FlavorChoice {
-  return CATPPUCCIN_FLAVORS.some((f) => f.themeId === themeId) ? themeId as FlavorChoice : 'off'
+  return TOKYONIGHT_FLAVORS.some((f) => f.themeId === themeId) ? themeId as FlavorChoice : 'off'
 }
 
-/** The flavour registered for a theme id, or undefined when not a Catppuccin theme. */
-export function flavorInfo(themeId: string): CatppuccinFlavorInfo | undefined {
-  return CATPPUCCIN_FLAVORS.find((f) => f.themeId === themeId)
+/** The flavour registered for a theme id, or undefined when not a TokyoNight theme. */
+export function flavorInfo(themeId: string): TokyoNightFlavorInfo | undefined {
+  return TOKYONIGHT_FLAVORS.find((f) => f.themeId === themeId)
 }
 
 /** Read the persisted flavour (absent / unknown values mean the default `off`). */
 export function readFlavor(): FlavorChoice {
   try {
     const raw = localStorage.getItem(FLAVOR_STORAGE_KEY)
-    return raw !== null && (CATPPUCCIN_FLAVOR_VALUES as readonly string[]).includes(raw)
+    return raw !== null && (TOKYONIGHT_FLAVOR_VALUES as readonly string[]).includes(raw)
       ? raw as FlavorChoice
       : 'off'
   } catch {
@@ -188,12 +186,12 @@ export function writeFlavor(choice: FlavorChoice): void {
 }
 
 /** Remember a built-in preference (system/light/dark) whenever the runtime is
- *  not on a Catppuccin flavour, so switching the plugin off restores the
+ *  not on a TokyoNight flavour, so switching the plugin off restores the
  *  user's pre-plugin choice instead of dropping them onto 'system'. The boot
  *  preference is the settings-document value, so this survives Desktop's
  *  per-launch port churn without joining the durable state schema. */
 export function rememberBuiltinPreference(preference: string): void {
-  if ((CATPPUCCIN_FLAVOR_VALUES as readonly string[]).includes(preference)) return
+  if ((TOKYONIGHT_FLAVOR_VALUES as readonly string[]).includes(preference)) return
   try {
     localStorage.setItem(RESTORE_STORAGE_KEY, preference)
   } catch {
@@ -291,7 +289,9 @@ export function overridesSnapshot(): Record<string, string> {
   return next
 }
 
-/** Read the persisted shiki style (absent means the shipped default). */
+/** Inert legacy value retained for settings-document round-tripping.
+ * Rendering always uses SHIKI_TOKENS[flavor].default.
+ */
 export function readShikiStyle(): ShikiStyle {
   try {
     return localStorage.getItem(SHIKI_STYLE_KEY) === 'italic-comments' ? 'italic-comments' : DEFAULT_SHIKI_STYLE
@@ -360,7 +360,7 @@ export function writeFollowDark(value: FollowDarkFlavor): void {
  * back — measured in production at ~0.8 `settings/mutate` per second,
  * ping-ponging `followDark` between two flavours and rewriting
  * `cordis.patch.yml` forever. The record below is a mapped type over the
- * section, so a field added to `CatppuccinSettingsSection` fails to compile
+ * section, so a field added to `TokyoNightSettingsSection` fails to compile
  * until it is cached here too (same drift class as `stateToMutateOps`, which
  * got a derived guard in issue #26).
  *
@@ -378,12 +378,12 @@ export function writeFollowDark(value: FollowDarkFlavor): void {
  * @param glass - the glass layer; `applyRemote` caches the knobs and republishes.
  */
 export function writeLocalSection(
-  section: CatppuccinSettingsSection,
-  glass: { applyRemote(state: CatppuccinSettingsSection['glass']): void },
+  section: TokyoNightSettingsSection,
+  glass: { applyRemote(state: TokyoNightSettingsSection['glass']): void },
 ): void {
   // `(value: never) => void` keeps the record free of variance friction while
   // still forcing EVERY key of the section to be present.
-  const writers: { [K in keyof CatppuccinSettingsSection]: (value: never) => void } = {
+  const writers: { [K in keyof TokyoNightSettingsSection]: (value: never) => void } = {
     flavor: writeFlavor,
     followSystem: writeFollowSystem,
     followDark: writeFollowDark,
@@ -394,7 +394,7 @@ export function writeLocalSection(
     // Last: it republishes, and that publish re-reads the whole cache.
     glass: (value) => glass.applyRemote(value),
   }
-  for (const key of Object.keys(writers) as (keyof CatppuccinSettingsSection)[]) {
+  for (const key of Object.keys(writers) as (keyof TokyoNightSettingsSection)[]) {
     // One assertion for the loop: the record is exhaustive by construction, but
     // TypeScript cannot correlate two indexes driven by the same union key.
     const write = writers[key] as (value: unknown) => void
@@ -456,10 +456,10 @@ function isBuiltinPreference(value: string): value is BuiltinPreference {
  *  from the settings document at boot/reload (`livePick` null) never win
  *  (issue #6: a doc persisted as `ui-theme.preference: light` was mistaken for
  *  a user choice and buried the flavour on every refresh/restart), and
- *  "system" never wins: while a flavour is on, the Catppuccin row is the
+ *  "system" never wins: while a flavour is on, the TokyoNight row is the
  *  active controller and the Appearance row must not bury the persisted
  *  choice. A user's explicit light/dark pick still wins immediately (matching
- *  livePick) and choosing "off" in the Catppuccin row restores it. */
+ *  livePick) and choosing "off" in the TokyoNight row restores it. */
 export function builtinPickWins(
   preference: string,
   livePick: BuiltinPreference | null,
@@ -478,7 +478,7 @@ export function builtinPickWins(
 export const inject = ['slots', 'locale', 'theme']
 
 /**
- * Register the Catppuccin dictionaries, the flavour themes (lazy — item JJ:
+ * Register the TokyoNight dictionaries, the flavour themes (lazy — item JJ:
  * only the active flavour is registered, the rest on first selection), and
  * the settings rows.
  * @param ctx - client root context.
@@ -513,7 +513,7 @@ export function apply(ctx: ClientContext): void {
     return () => {
       for (const dispose of disposers) dispose()
     }
-  }, 'catppuccin: dictionaries')
+  }, 'tokyonight: dictionaries')
 
   const theme = ctx.get('theme') as ThemeRuntime
 
@@ -523,12 +523,12 @@ export function apply(ctx: ClientContext): void {
   // style (item M) are read at registration time, so a preference change
   // re-registers the active flavour with the merged tokens.
   const themeDisposers = new Map<string, () => void>()
-  const registerThemeFor = (flavor: CatppuccinFlavorInfo): void => {
+  const registerThemeFor = (flavor: TokyoNightFlavorInfo): void => {
     if (themeDisposers.has(flavor.themeId)) return
-    // Flavour id for the shiki token lookup: themeId is "catppuccin-latte"
-    // → key is "latte".
-    const flavorId = flavor.themeId.replace('catppuccin-', '') as CatppuccinFlavorId
-    const shiki = SHIKI_TOKENS[flavorId][readShikiStyle()]
+    // Flavour id for the shiki token lookup: themeId is "tokyonight-light"
+    // → key is "light".
+    const flavorId = flavor.themeId.replace('tokyonight-', '') as TokyoNightFlavorId
+    const shiki = SHIKI_TOKENS[flavorId].default
     // Tolerant (issue #23): `theme.register` throws `theme "…" is already
     // registered` when another instance of this plugin owns the id (a
     // duplicate install). One reachable path runs it synchronously
@@ -561,9 +561,9 @@ export function apply(ctx: ClientContext): void {
     for (const dispose of themeDisposers.values()) dispose()
     themeDisposers.clear()
   }
-  ctx.effect(() => disposeThemeRegistrations, 'catppuccin: flavour theme disposers')
+  ctx.effect(() => disposeThemeRegistrations, 'tokyonight: flavour theme disposers')
 
-  // The glass layer: a toggleable glassmorphism skin on top of the Catppuccin
+  // The glass layer: a toggleable glassmorphism skin on top of the TokyoNight
   // themes. It owns its lifecycle (enable flag + knobs persist in
   // localStorage as the in-browser cache; the durable copy is the settings
   // document hydrated/pushed below; every effect is released with this fiber).
@@ -571,7 +571,7 @@ export function apply(ctx: ClientContext): void {
   // persisted glass state onto the layer.
   const glass = new GlassLayer(ctx)
 
-  // The official settings transport for the Catppuccin durable state. Which
+  // The official settings transport for the TokyoNight durable state. Which
   // seam it is depends on the host version (0.1.7-alpha.1 replaced the
   // `settingsScope` namespace binding with the `configForms` entry form), so
   // the facade picks whichever service the host provides and never blocks
@@ -583,10 +583,10 @@ export function apply(ctx: ClientContext): void {
   // authoritative write target of the settings row) plus the glass layer's
   // remote state and the preference fields. Passed to the debounced scope
   // persist by reference so the flush always captures the freshest values.
-  const buildLocalState = (): CatppuccinState => ({
+  const buildLocalState = (): TokyoNightState => ({
     version: STATE_VERSION,
     // `FlavorChoice` widens to `string` (palettes carry `themeId: string`), but
-    // the runtime value is always one of the four theme ids or `off` — the
+    // the runtime value is always one of the three theme ids or `off` — the
     // same set as `FlavorValue`, guarded by tests/state.spec.ts.
     flavor: readFlavor() as FlavorValue,
     // Issue #36 — re-sanitized on the way out so the two stores can never
@@ -617,7 +617,7 @@ export function apply(ctx: ClientContext): void {
 
   // ── Follow the OS scheme (issue #36) ──────────────────────────────────────
   //
-  // A registered theme carries ONE `colorScheme`, so "Latte on light, Mocha on
+  // A registered theme carries ONE `colorScheme`, so "Light on light, Night on
   // dark" cannot be expressed as a theme id. What CAN express it is a token
   // override layer: `theme.overrideTokens(source, { token: { light, dark } })`
   // is folded by `composeActive()` against the ACTIVE (OS-resolved) scheme, so
@@ -635,9 +635,9 @@ export function apply(ctx: ClientContext): void {
    *  republish (every `overrideTokens` call emits `theme/change`). */
   let followLayerSignature: string | undefined
 
-  /** Theme-id → shiki/flavour key ("catppuccin-latte" → "latte"). */
-  const flavorKey = (flavor: CatppuccinFlavorInfo): CatppuccinFlavorId =>
-    flavor.themeId.replace('catppuccin-', '') as CatppuccinFlavorId
+  /** Theme-id → shiki/flavour key ("tokyonight-light" → "light"). */
+  const flavorKey = (flavor: TokyoNightFlavorInfo): TokyoNightFlavorId =>
+    flavor.themeId.replace('tokyonight-', '') as TokyoNightFlavorId
 
   /** Whether this host serves `overrideTokens` at all. Hosts before that API
    *  cannot follow the OS; the row hides the control instead of offering a
@@ -646,7 +646,7 @@ export function apply(ctx: ClientContext): void {
     typeof (theme as unknown as { overrideTokens?: unknown }).overrideTokens === 'function'
 
   /** Follow mode is wanted AND possible. `off` always wins: turning the plugin
-   *  off must not leave a layer painting Catppuccin tokens. */
+   *  off must not leave a layer painting TokyoNight tokens. */
   const followWanted = (): boolean =>
     followSupported() && readFollowSystem() && readFlavor() !== 'off'
 
@@ -665,9 +665,8 @@ export function apply(ctx: ClientContext): void {
     const light = flavorInfo(FOLLOW_LIGHT_FLAVOR)
     const dark = flavorInfo(readFollowDark())
     if (light === undefined || dark === undefined) return null
-    const shiki = readShikiStyle()
-    const lightShiki = SHIKI_TOKENS[flavorKey(light)][shiki] as Record<string, string>
-    const darkShiki = SHIKI_TOKENS[flavorKey(dark)][shiki] as Record<string, string>
+    const lightShiki = SHIKI_TOKENS[flavorKey(light)].default as Record<string, string>
+    const darkShiki = SHIKI_TOKENS[flavorKey(dark)].default as Record<string, string>
     const menu = menuSurfaceFor(hostHasMenuBlur())
     const overrides = readOverrides()
     const names = new Set([
@@ -772,7 +771,7 @@ export function apply(ctx: ClientContext): void {
   // C/X): a flush whose base revision the document moved past returns
   // `stale`, the local change is abandoned, and the remote state is
   // re-adopted + surfaced in the update row.
-  let lastWrittenSection: CatppuccinSettingsSection | undefined
+  let lastWrittenSection: TokyoNightSettingsSection | undefined
   let handleStaleConflict: (() => void) | undefined
   // Issue #31: the un-recording setTheme entry point (see `commitTheme`),
   // published by the restore effect for the `off` paths that live outside it.
@@ -798,7 +797,7 @@ export function apply(ctx: ClientContext): void {
   // 1.4 s later by `applyScopeSnapshot`, and the queued flush then persisted the
   // reverted value). `pendingLocalPush` covers only the window where the scope
   // is not usable yet; this one covers the ordinary, usable-scope case.
-  let pendingLocalSection: CatppuccinSettingsSection | null = null
+  let pendingLocalSection: TokyoNightSettingsSection | null = null
   // Issue #31, second guard: the highest namespace revision this window has
   // seen. A snapshot that reports a LOWER revision is a stale view (a describe
   // read that resolved late, a superseded write's answer), never a newer
@@ -813,7 +812,7 @@ export function apply(ctx: ClientContext): void {
   // path itself re-publishes through the glass layer, and arming on that
   // self-inflicted publish would block the NEXT external edit for a whole
   // debounce beat.
-  let lastDocumentSection: CatppuccinSettingsSection | null = null
+  let lastDocumentSection: TokyoNightSettingsSection | null = null
 
   // Issue #30: the local section as of the last moment this window knew it was
   // IN SYNC with the durable document — boot, or the last adoption / successful
@@ -901,18 +900,10 @@ export function apply(ctx: ClientContext): void {
     })
   }
 
-  // Auto-check (item H): the last verdict the periodic checker stored (the
-  // update row surfaces it on mount) plus the arm hook the preference
-  // setter re-invokes on toggle (the timers themselves live in the restore
-  // effect below, so they die with the fiber).
-  const AUTO_CHECK_BOOT_DELAY_MS = 3000
-  const AUTO_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000
   /** How long the Host's pre-paint palette may survive before it is removed
    *  unconditionally (issue #30 补充). Generous on purpose: removing it EARLY
    *  re-exposes the official palette for one frame, which is the bug. */
   const BOOT_PALETTE_FALLBACK_MS = 10_000
-  let lastAutoResult: UpdateCheckPayload | null = null
-  let armAutoCheck: (() => void) | undefined
 
   // Restore the persisted choice and defend it against the built-in
   // Appearance scope's `adopt()`. Two stores feed the desired flavour:
@@ -930,7 +921,7 @@ export function apply(ctx: ClientContext): void {
   // below is the one seam that tells explicit picks apart: we restore our
   // flavour whenever the runtime preference is NOT a built-in value the user
   // clicked in the Appearance row THIS session, and choosing "off" in the
-  // Catppuccin row clears the persisted flavour before the switch so this
+  // TokyoNight row clears the persisted flavour before the switch so this
   // guard does not fight it.
   ctx.effect(() => {
     // Session-live record of the user's last EXPLICIT built-in pick, kept by
@@ -939,7 +930,7 @@ export function apply(ctx: ClientContext): void {
     // row" from "ThemeRuntime.adopt() copied the settings document's value
     // at boot/reload" — adopt() writes the preference directly and never goes
     // through setTheme, so a doc-adopted light/dark leaves this null and the
-    // guard below cannot mistake it for a user choice. Picking a Catppuccin
+    // guard below cannot mistake it for a user choice. Picking a TokyoNight
     // flavour (or the wrapper's own flavour restore) clears the record.
     let liveBuiltinPick: BuiltinPreference | null = null
     // Issue #30 补充: last-resort removal of the Host's pre-paint palette. Its
@@ -1089,7 +1080,7 @@ export function apply(ctx: ClientContext): void {
       }
       if (desired === 'off') {
         // The persisted choice is off — but this session may still be rendering
-        // a Catppuccin flavour (another window or the settings document turned
+        // a TokyoNight flavour (another window or the settings document turned
         // it off). Hand the user back their built-in preference, exactly like
         // the row's own `select('off')` path. Gated on an EXPLICIT 'off' in
         // localStorage (audit F4): an empty storage may just mean this
@@ -1117,7 +1108,7 @@ export function apply(ctx: ClientContext): void {
       // A built-in preference only wins if the user explicitly picked it in
       // THIS session (matching liveBuiltinPick). "system" and boot/adopt()
       // values adopted from the settings document (liveBuiltinPick null) are
-      // stale for the plugin — the Catppuccin row choice is newer than the
+      // stale for the plugin — the TokyoNight row choice is newer than the
       // document's light/dark, so restore the flavour then.
       if (builtinPickWins(preference, liveBuiltinPick)) return
       scheduleRestore(desired)
@@ -1153,7 +1144,7 @@ export function apply(ctx: ClientContext): void {
         return
       }
       // Another window turned the flavour off (audit F4): this tab must land on
-      // the built-in preference too, or it keeps rendering Catppuccin while the
+      // the built-in preference too, or it keeps rendering TokyoNight while the
       // persisted choice — and the settings row of the other window — say off.
       if (flavorFromThemeId(theme.getTheme().preference) === 'off') return
       try {
@@ -1294,35 +1285,6 @@ export function apply(ctx: ClientContext): void {
     applyScopeSnapshot()
     const offScope = scope.subscribe(applyScopeSnapshot)
 
-    // Auto-check (item H): warm the Host's verdict cache at boot and every
-    // 6 hours while the preference is on. The row surfaces the last result
-    // and the Host cache keeps re-opens instant; failures stay uncached so
-    // the next cycle retries for real.
-    const runAutoCheck = async (): Promise<void> => {
-      try {
-        const response = await fetch(`${UPDATE_ROUTE_PATH}?channel=${readUpdateChannel()}`, {
-          headers: { accept: 'application/json' },
-          // R3: same client-side cap as the manual check — a periodic probe
-          // must never pile up behind a wedged host.
-          signal: AbortSignal.timeout(UPDATE_CHECK_CLIENT_TIMEOUT_MS),
-        })
-        if (response.ok) lastAutoResult = await response.json() as UpdateCheckPayload
-      } catch {
-        /* best-effort; the row's retry discipline covers the user-visible UX */
-      }
-    }
-    let bootTimer: number | undefined
-    let intervalTimer: number | undefined
-    const armAutoCheckImpl = (): void => {
-      window.clearTimeout(bootTimer)
-      window.clearInterval(intervalTimer)
-      if (!readAutoCheck()) return
-      bootTimer = window.setTimeout(() => { void runAutoCheck() }, AUTO_CHECK_BOOT_DELAY_MS)
-      intervalTimer = window.setInterval(() => { void runAutoCheck() }, AUTO_CHECK_INTERVAL_MS)
-    }
-    armAutoCheck = armAutoCheckImpl
-    armAutoCheckImpl()
-
     handleStaleConflict = () => applyScopeSnapshot()
 
     return () => {
@@ -1334,12 +1296,9 @@ export function apply(ctx: ClientContext): void {
       // A stopped plugin must not leave the sheet pinned over the official
       // theme (issue #30 补充).
       clearBootPalette()
-      window.clearTimeout(bootTimer)
-      window.clearInterval(intervalTimer)
       cancelDurablePersist()
       handleStaleConflict = undefined
       applyRestoredPreference = undefined
-      armAutoCheck = undefined
       // Undo the setTheme wrapper so a stopped plugin leaves the runtime as
       // it found it — but only while the wrapper is still ours (R1): if
       // another extension replaced it after us, that replacement is the
@@ -1348,13 +1307,13 @@ export function apply(ctx: ClientContext): void {
       if (theme.setTheme === restoreGuardSetTheme) {
         theme.setTheme = originalSetTheme
       } else {
-        console.warn('[dsh-catppuccin] theme.setTheme was replaced by another extension; leaving it in place')
+        console.warn('[dsh-tokyonight] theme.setTheme was replaced by another extension; leaving it in place')
       }
     }
-  }, 'catppuccin: theme restore')
+  }, 'tokyonight: theme restore')
 
-  const injected = (): CatppuccinRowInjected => ({
-    themes: CATPPUCCIN_FLAVORS.map((flavor) => ({
+  const injected = (): TokyoNightRowInjected => ({
+    themes: TOKYONIGHT_FLAVORS.map((flavor) => ({
       id: flavor.themeId,
       label: flavor.label,
       accent: flavor.accent,
@@ -1374,8 +1333,8 @@ export function apply(ctx: ClientContext): void {
     setFollowSystem: (enabled: boolean) => {
       if (!followSupported()) return
       if (enabled) {
-        // Follow mode is a MODIFIER on a Catppuccin choice, never a way to
-        // paint Catppuccin over `off` — adopt the dark half when nothing is
+        // Follow mode is a MODIFIER on a TokyoNight choice, never a way to
+        // paint TokyoNight over `off` — adopt the dark half when nothing is
         // selected yet.
         if (readFlavor() === 'off') writeFlavor(readFollowDark())
         writeFollowSystem(true)
@@ -1483,13 +1442,6 @@ export function apply(ctx: ClientContext): void {
       reapplyThemePrefs()
       queuePersist()
     },
-    shikiStyle: () => readShikiStyle(),
-    setShikiStyle: (style: ShikiStyle) => {
-      writeShikiStyle(style)
-      emitPrefs()
-      reapplyThemePrefs()
-      queuePersist()
-    },
     subscribePrefs: (listener: () => void) => {
       prefsListeners.add(listener)
       return () => { prefsListeners.delete(listener) }
@@ -1520,53 +1472,6 @@ export function apply(ctx: ClientContext): void {
   // Update check: the Host owns the npm lookup (Node fetch, no CORS); the row
   // only fetches the same-origin route and renders the verdict. Upgrade stays
   // a terminal action — the row just surfaces the CLI command.
-  const updateInjected = (): UpdateRowInjected => ({
-    check: async (channel: UpdateChannel) => {
-      try {
-        const response = await fetch(`${UPDATE_ROUTE_PATH}?channel=${channel}`, {
-          headers: { accept: 'application/json' },
-          // R3 (2026-10-10 review): cap the host hop. The route's own registry
-          // lookup is capped at 8s (UPDATE_FETCH_TIMEOUT_MS), so this budget
-          // only bites when the host process itself stopped answering —
-          // without it the row's `checking` phase (and its disabled button)
-          // could stay pinned forever. The abort lands in the catch below as
-          // the same `network.local` as any other failed hop.
-          signal: AbortSignal.timeout(UPDATE_CHECK_CLIENT_TIMEOUT_MS),
-        })
-        return await response.json() as UpdateCheckPayload
-      } catch {
-        return { ok: false, code: 'network.local', error: 'network.local' }
-      }
-    },
-    autoCheck: () => readAutoCheck(),
-    setAutoCheck: (value: boolean) => {
-      writeAutoCheck(value)
-      emitPrefs()
-      queuePersist()
-      armAutoCheck?.() // re-arm the boot/periodic timers on toggle
-    },
-    channel: () => readUpdateChannel(),
-    setChannel: (channel: UpdateChannel) => {
-      writeUpdateChannel(channel)
-      emitPrefs()
-      queuePersist()
-    },
-    subscribePrefs: (listener: () => void) => {
-      prefsListeners.add(listener)
-      return () => { prefsListeners.delete(listener) }
-    },
-    lastAutoResult: () => lastAutoResult,
-    subscribeConflict: (listener: () => void) => {
-      conflictListeners.add(listener)
-      return () => { conflictListeners.delete(listener) }
-    },
-    conflictCount: () => conflictCount,
-    // Timestamps must follow the interface language, not the browser locale
-    // (`toLocaleString()` with no argument silently uses the latter).
-    activeLocale: () => ctx.locale.getLocale().active,
-    subscribeLocale: (listener: () => void) => ctx.locale.subscribe(listener),
-  })
-
   // The plugin's OWN settings page (issue #27). One nav entry, and every
   // preference row lives on it instead of being spliced into General. Two
   // contracts, both load-bearing:
@@ -1580,25 +1485,24 @@ export function apply(ctx: ClientContext): void {
   // `order: 25` keeps the official sections (account -10 / general 0 /
   // models 10 / plugins 15 / agent-presets 20) ahead of ours.
   const t = ctx.locale.bind(NS)
-  const sectionInjected = (): CatppuccinSettingsPageInjected => ({
+  const sectionInjected = (): TokyoNightSettingsPageInjected => ({
     flavor: injected(),
     glass: glassInjected(),
-    update: updateInjected(),
   })
 
   ctx.slots.inject('settings.section', () => tolerantRegistration(() => ctx.slots.register({
     name: 'settings.section',
-    id: 'catppuccin',
+    id: 'tokyonight',
     order: 25,
     label: () => t('nav.title'),
     locale: NS,
     inject: sectionInjected,
-  }, CatppuccinSettingsPage)))
+  }, TokyoNightSettingsPage)))
   // Plugins-page card: the settings section on this plugin's OWN detail page in
   // the Plugin manager (DSH >= 0.2.0-rc.2). Three things about this
   // registration are contracts, not style (see `src/client/detail-card.tsx`):
   //  - `key` is the BUNDLE PACKAGE NAME, because the page dispatches with
-  //    `{ entryKey: pkg.name }` — NOT `CATPPUCCIN_ENTRY_ID`, which keys the
+  //    `{ entryKey: pkg.name }` — NOT `TOKYONIGHT_ENTRY_ID`, which keys the
   //    settings namespace;
   //  - the section exists only while this registration does, so `whileServed`
   //    withdraws it with the namespace instead of leaving an empty block;
@@ -1607,23 +1511,22 @@ export function apply(ctx: ClientContext): void {
   // `whileServed` is guarded because not every host past 0.1.7 serves it, and
   // `slots.inject` waits for the slot's DECLARATION — a host without the Plugin
   // manager never fires it (no throw, no pending state).
-  const detailInjected = (): CatppuccinDetailCardInjected => ({
+  const detailInjected = (): TokyoNightDetailCardInjected => ({
     flavor: injected(),
     glass: glassInjected(),
-    update: updateInjected(),
   })
 
   ctx.inject(['configForms'], (formsCtx) => {
     const forms = formsCtx.configForms
     if (typeof forms.whileServed !== 'function') return
-    return forms.whileServed([CATPPUCCIN_ENTRY_ID], () => ctx.slots.inject(
+    return forms.whileServed([TOKYONIGHT_ENTRY_ID], () => ctx.slots.inject(
       'plugins.bundle.config',
       () => tolerantRegistration(() => ctx.slots.register({
         name: 'plugins.bundle.config',
         key: PACKAGE_NAME,
         locale: NS,
         inject: detailInjected,
-      }, CatppuccinDetailCard)),
+      }, TokyoNightDetailCard)),
     ))
   })
 }

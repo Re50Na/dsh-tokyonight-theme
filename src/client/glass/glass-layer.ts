@@ -1,6 +1,6 @@
 /**
- * Catppuccin glass layer — one toggleable glassmorphism skin over the whole
- * Web surface, riding on top of the Catppuccin themes. Everything the layer
+ * TokyoNight glass layer — one toggleable glassmorphism skin over the whole
+ * Web surface, riding on top of the TokyoNight themes. Everything the layer
  * owns is an effect: the CSS hooks ride a `data-dsh-glass` attribute on
  * <html> (the stylesheet only applies under it), the seam stamps ride a
  * MutationObserver, and the page-edge fade bands are DOM elements — so
@@ -18,7 +18,7 @@
  *
  * The enable flag and every knob persist in localStorage — the in-browser
  * cache and cross-tab sync bus. The DURABLE copy of the same state lives in
- * the official settings store under the DSH home (namespace `catppuccin` / the
+ * the official settings store under the DSH home (namespace `tokyonight` / the
  * profile entry form, see `src/state.ts` — the Host declares it, the Client
  * binds whichever seam the host serves through `src/client/state-sync.ts` and
  * hydrates via `applyRemote` / `getRemoteState`):
@@ -63,11 +63,11 @@ const GLASS_KNOB_PROPERTIES = [
 ] as const
 
 /** localStorage key carrying the layer enable flag. */
-export const GLASS_ENABLED_KEY = 'dsh.catppuccin.glass.enabled'
+export const GLASS_ENABLED_KEY = 'dsh.tokyonight.glass.enabled'
 
 /** Plugin identity stamped onto the lazily-mounted glass <style> tag (the
  *  shell's unload cleanup keys off `data-plugin`). */
-const GLASS_STYLE_PLUGIN = '@nonamelego/dsh-catppuccin'
+const GLASS_STYLE_PLUGIN = 'dsh-tokyonight-theme'
 const GLASS_STYLE_TAG_ID = 'glass.module.css'
 
 /** The lazily-mounted glass stylesheet <style> tag (undefined while the
@@ -154,12 +154,12 @@ export const SETTINGS_DEFAULTS: GlassSettings = {
 
 /** Numeric knob keys and their localStorage names. */
 const NUMERIC_KEYS = {
-  blur: 'dsh.catppuccin.glass.blur',
-  frost: 'dsh.catppuccin.glass.frost',
-  brightness: 'dsh.catppuccin.glass.brightness',
-  gap: 'dsh.catppuccin.glass.gap',
-  glowStrength: 'dsh.catppuccin.glass.glow-strength',
-  glowSize: 'dsh.catppuccin.glass.glow-size',
+  blur: 'dsh.tokyonight.glass.blur',
+  frost: 'dsh.tokyonight.glass.frost',
+  brightness: 'dsh.tokyonight.glass.brightness',
+  gap: 'dsh.tokyonight.glass.gap',
+  glowStrength: 'dsh.tokyonight.glass.glow-strength',
+  glowSize: 'dsh.tokyonight.glass.glow-size',
 } as const
 type NumericKey = keyof typeof NUMERIC_KEYS
 
@@ -183,16 +183,16 @@ const NUMERIC_BOUNDS: Record<NumericKey, readonly [number, number]> = {
 
 /** The localStorage names of the numeric knobs — the reverse of
  *  `NUMERIC_KEYS`. Used by the cross-tab `storage` handler: the event's `key`
- *  is a localStorage name (`dsh.catppuccin.glass.blur`), so it must be matched
+ *  is a localStorage name (`dsh.tokyonight.glass.blur`), so it must be matched
  *  against the VALUES, never with `key in NUMERIC_KEYS` (that tests the object's
  *  property names — `blur`/`frost`/`brightness` — and is false for every real
  *  storage key, which silently killed cross-tab knob sync; audit F1). */
 const NUMERIC_STORAGE_KEYS: readonly string[] = Object.values(NUMERIC_KEYS)
 
-const MODE_KEY = 'dsh.catppuccin.glass.mode'
+const MODE_KEY = 'dsh.tokyonight.glass.mode'
 
 /** localStorage key of the ground-glow switch (issue #26). */
-const GLOW_KEY = 'dsh.catppuccin.glass.glow'
+const GLOW_KEY = 'dsh.tokyonight.glass.glow'
 
 /** Clamp a numeric knob into its `NUMERIC_BOUNDS` range. Two knobs are NOT
  *  0-100 and would silently snap back if folded into that arm: `gap` (issue
@@ -351,7 +351,7 @@ export class GlassLayer {
         themeListener()
         this.unmount()
       }
-    }, 'catppuccin: glass layer lifecycle')
+    }, 'tokyonight: glass layer lifecycle')
 
     // Apply the restored state: mount the layer when the persisted flag is on
     // (the settings row reflects the same snapshot, so the two stay in sync).

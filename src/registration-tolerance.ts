@@ -39,7 +39,7 @@ export function tolerantRegistration(run: () => (() => void) | void): () => void
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     if (!ALREADY_OWNED.test(message)) {
-      console.warn(`[dsh-catppuccin] registration skipped — ${message}`)
+      console.warn(`[dsh-tokyonight] registration skipped — ${message}`)
     }
     return () => {}
   }

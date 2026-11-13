@@ -10,48 +10,44 @@
  * The page is a composition, not a fourth implementation: it stacks the exact
  * rows the plugin detail card shows (`plugins.bundle.config`), handed the same
  * injected faces. Both homes read and write the one durable section
- * (`CATPPUCCIN_ENTRY_ID`); the only cost of the second home is that the rows
+ * (`TOKYONIGHT_ENTRY_ID`); the only cost of the second home is that the rows
  * exist twice in the DOM when both are open — each instance subscribes for
  * itself, so no state is shared behind the framework's back.
  */
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { CatppuccinRow, type CatppuccinRowInjected } from './CatppuccinRow.tsx'
+import { TokyoNightRow, type TokyoNightRowInjected } from './TokyoNightRow.tsx'
 import { GlassRow, type GlassRowInjected } from './glass/glass-row.tsx'
 import { LinksRow } from './LinksRow.tsx'
-import { UpdateRow, type UpdateRowInjected } from './UpdateRow.tsx'
 import css from './settings-section.module.css'
 import rowCss from './settings-row.module.css'
 
 /** Injected business face: the three rows' own faces, unchanged. */
-export interface CatppuccinSettingsPageInjected {
-  /** Catppuccin flavour row (registered themes + pick). */
-  flavor: CatppuccinRowInjected
+export interface TokyoNightSettingsPageInjected {
+  /** TokyoNight flavour row (registered themes + pick). */
+  flavor: TokyoNightRowInjected
   /** Glass-layer row (enable flag + knobs). */
   glass: GlassRowInjected
-  /** Update-check row (version, channel, check button). */
-  update: UpdateRowInjected
 }
 
 /** Full component props: runtime share (the shell's `close`) + locale + face. */
-export type CatppuccinSettingsPageProps =
-  PropsRuntime<'settings.section'> & PropsLocale<'catppuccin'> & CatppuccinSettingsPageInjected
+export type TokyoNightSettingsPageProps =
+  PropsRuntime<'settings.section'> & PropsLocale<'tokyonight'> & TokyoNightSettingsPageInjected
 
 /**
- * Render the Catppuccin settings page.
+ * Render the TokyoNight settings page.
  * @param props - the injected faces plus the framework seats.
  * @returns the page: heading plus the four preference rows.
  */
-export function CatppuccinSettingsPage(props: CatppuccinSettingsPageProps): React.JSX.Element {
+export function TokyoNightSettingsPage(props: TokyoNightSettingsPageProps): React.JSX.Element {
   return (
-    <div className={rowCss.stack} data-catppuccin-settings>
+    <div className={rowCss.stack} data-tokyonight-settings>
       <h2 className={css.title}>{props.t('page.title')}</h2>
-      <CatppuccinRow {...props.flavor} t={props.t} />
+      <TokyoNightRow {...props.flavor} t={props.t} />
       {/* `close` is the shell's own dismissal for this page, so the mode picker
           can offer the only honest preview of a layout switch: get out of the
           way and let the user look at the real UI. The plugin detail card has
           no such seat and therefore offers no button. */}
       <GlassRow {...props.glass} t={props.t} onPreviewMain={() => { props.close() }} />
-      <UpdateRow {...props.update} t={props.t} />
       <LinksRow t={props.t} />
     </div>
   )
