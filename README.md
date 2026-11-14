@@ -64,12 +64,12 @@
 
 ### 方式一：从 npm 安装（推荐）
 
-当前 npm 包尚未首次发布。发布后，预发布版本使用 `@beta` 安装；正式版发布后可省略 `@beta`。
+正式版使用默认的 `latest` 渠道，安装时直接使用包名，无需添加 `@beta`。
 
 **Web 端**：
 
 ```sh
-dsh plugin --profile web add dsh-tokyonight-theme@beta
+dsh plugin --profile web add dsh-tokyonight-theme
 ```
 
 装完重启 `dsh web` 即可，`dsh plugin` 会自动把它加进 profile 的 bundles。
@@ -79,8 +79,8 @@ dsh plugin --profile web add dsh-tokyonight-theme@beta
 
 | 操作 | 官方桌面壳（[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 客户端） | 社区桌面壳（[DSH Desktop](https://github.com/anywhere-labs/dsh-desktop)） |
 | --- | --- | --- |
-| **安装** | 应用内的**插件界面** → 添加插件 → 填包名 `dsh-tokyonight-theme@beta`（也接受 Git 地址、压缩包或本地路径） | 在应用打开的**终端**里执行：<br><code>dsh plugin --profile desktop add dsh-tokyonight-theme@beta</code> |
-| **升级** | **先在插件界面里删除本插件，再填入同一个包名重新安装** | 在应用打开的终端里执行：<br><code>dsh plugin --profile desktop update dsh-tokyonight-theme@beta</code> |
+| **安装** | 应用内的**插件界面** → 添加插件 → 填包名 `dsh-tokyonight-theme`（也接受 Git 地址、压缩包或本地路径） | 在应用打开的**终端**里执行：<br><code>dsh plugin --profile desktop add dsh-tokyonight-theme</code> |
+| **升级** | **先在插件界面里删除本插件，再填入同一个包名重新安装** | 在应用打开的终端里执行：<br><code>dsh plugin --profile desktop update dsh-tokyonight-theme</code> |
 | **谁执行 pnpm** | 应用自带的 pnpm | 应用自带的 pnpm |
 
 安装或升级后，重启桌面应用即可加载。
@@ -101,7 +101,7 @@ dsh plugin --profile web add https://github.com/Re50Na/dsh-tokyonight-theme
 它与 Web GUI 插件使用同一个包，通过标准插件安装命令装进 `dsh-tui` profile：
 
 ```sh
-dsh plugin --profile dsh-tui add dsh-tokyonight-theme@beta
+dsh plugin --profile dsh-tui add dsh-tokyonight-theme
 ```
 
 也可以从仓库安装：

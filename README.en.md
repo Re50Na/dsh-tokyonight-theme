@@ -64,12 +64,12 @@ The three themes in DeepSeek Harness, captured from the local GUI:
 
 ### Option 1: Install from npm (Recommended)
 
-The package has not yet been published to npm. After the first release, use `@beta` for prereleases; omit it once a stable release is available.
+Stable releases use the default `latest` channel. Install using the package name directly, without `@beta`.
 
 **Web**:
 
 ```sh
-dsh plugin --profile web add dsh-tokyonight-theme@beta
+dsh plugin --profile web add dsh-tokyonight-theme
 ```
 
 Restart `dsh web` after installation. `dsh plugin` automatically adds the package to the profile's bundles.
@@ -79,8 +79,8 @@ For another profile, replace `web` with its name, such as `headless`.
 
 | Action | Official desktop shell ([DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) client) | Community desktop shell ([DSH Desktop](https://github.com/anywhere-labs/dsh-desktop)) |
 | --- | --- | --- |
-| **Install** | Open the in-app **plugin manager** → Add Plugin → enter `dsh-tokyonight-theme@beta`. Git URLs, archives, and local paths are also accepted. | Run in the **terminal opened by the app**:<br><code>dsh plugin --profile desktop add dsh-tokyonight-theme@beta</code> |
-| **Update** | **Remove the plugin in the plugin manager, then reinstall it using the same package name.** | Run in the terminal opened by the app:<br><code>dsh plugin --profile desktop update dsh-tokyonight-theme@beta</code> |
+| **Install** | Open the in-app **plugin manager** → Add Plugin → enter `dsh-tokyonight-theme`. Git URLs, archives, and local paths are also accepted. | Run in the **terminal opened by the app**:<br><code>dsh plugin --profile desktop add dsh-tokyonight-theme</code> |
+| **Update** | **Remove the plugin in the plugin manager, then reinstall it using the same package name.** | Run in the terminal opened by the app:<br><code>dsh plugin --profile desktop update dsh-tokyonight-theme</code> |
 | **pnpm executable** | Bundled with the app | Bundled with the app |
 
 Restart the desktop app after installation or an update to load the plugin.
@@ -101,7 +101,7 @@ This section covers the third-party terminal frontend [dsh-TUI](https://github.c
 It uses the same package as the Web GUI plugin. Install it into the `dsh-tui` profile with the standard plugin command:
 
 ```sh
-dsh plugin --profile dsh-tui add dsh-tokyonight-theme@beta
+dsh plugin --profile dsh-tui add dsh-tokyonight-theme
 ```
 
 Alternatively, install from the repository:

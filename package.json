@@ -1,7 +1,7 @@
 {
   "name": "dsh-tokyonight-theme",
   "description": "Tokyo Night themes for DeepSeek Harness \u2014 Night, Storm and Light, with optional glass effects.",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0",
   "icon": "icon.png",
   "type": "module",
   "engines": {
