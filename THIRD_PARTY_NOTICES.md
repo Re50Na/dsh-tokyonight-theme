@@ -4,7 +4,7 @@ The plugin framework and glass skin are derived from
 https://github.com/NoNameLeGo/dsh-catppuccin-theme (MIT).
 The upstream LICENSE, Copyright (c) 2021 Catppuccin, is preserved in LICENSE.
 
-Tokyo Night palette and source documentation (TokyoNightPalette.md):
+Tokyo Night palette source:
 https://github.com/tokyo-night/tokyo-night-vscode-theme (MIT).
 
 The MIT License (MIT)
@@ -31,7 +31,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 DSH design-token snapshot: deepseek-ai/deepseek-harness,
 commit 639ed015397290b3745d163aafe02ffee4aa3f84. See data/README.md.
 
-icon.svg is original vector artwork created for this fork.
 
 ## DSH token snapshot license
 

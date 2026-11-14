@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /** Generate 95-key TUI themes from data/tokyonight-palette.json.
- * Source colours: TokyoNightPalette.md. Neutral ramps are derived in data/README.md.
+ * Source colours: data/tokyonight-palette.json. Neutral ramps are derived in data/README.md.
  * GUI, Shiki and TUI share this semantic palette. Run pnpm gen:all.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'

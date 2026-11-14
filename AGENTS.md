@@ -11,7 +11,7 @@ Night, Storm and Light base colours and derived UI ramps.
 - Package name: dsh-tokyonight-theme (publication availability not yet verified).
 - Keep LICENSE and THIRD_PARTY_NOTICES.md in distributions.
 - Preserve upstream glass geometry and registration/persistence safeguards.
-- Validate with pnpm typecheck, pnpm typecheck:tests, pnpm build and pnpm test.
+- Validate source changes with pnpm typecheck and pnpm build; no unit-test suite is retained.
 - Commit/push/publish only when requested. Do not claim live UI validation without running it.
 
 - Commit prebuilt lib/ with source changes after running pnpm build.

@@ -1,7 +1,8 @@
 # Theme inputs
 
 - tokyonight-palette.json: semantic source for GUI, Shiki and TUI.
-  Base colours come from ../TokyoNightPalette.md. UI surface and secondary
+  Base colours come from the Tokyo Night palette:
+  https://github.com/tokyo-night/tokyo-night-vscode-theme. UI surface and secondary
   label ramps are derived in sRGB, explicitly stored so generation is offline.
   Dark surface0/1/2 mix the documented terminal black towards the background;
   mantle/base use 10%/20% terminal black; crust is the exact Night/Storm background.

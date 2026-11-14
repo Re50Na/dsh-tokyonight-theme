@@ -5,8 +5,7 @@
     "src/client/index.ts",
     "src/state.ts",
     "src/client/palettes.ts",
-    "src/tui-themes.ts",
-    "src/update-check.ts"
+    "src/tui-themes.ts"
   ],
   "out": "docs/api",
   "readme": "none",
