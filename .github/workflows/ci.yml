@@ -22,14 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # pnpm 版本由 package.json 的 packageManager 单点决定：
-      # 这里刻意不传 `version:`（两者字符串不等时 action-setup 会直接抛错）。
-      - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
+
+      - name: Install pnpm
+        run: npm install --global pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -61,13 +59,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          # pnpm store 也被缓存：宿主会在临时 profile 里做一次安装，命中缓存后是秒级。
-          cache: pnpm
+
+      - name: Install pnpm
+        run: npm install --global pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

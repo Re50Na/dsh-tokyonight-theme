@@ -12,7 +12,7 @@
 
 ## 本地开发与安装
 
-要求 Node >=20、pnpm 10.33.3，DSH 声明下限沿用上游的 >=0.1.7-rc.1；本 fork 的实际兼容性仍需在对应宿主验证。
+要求 Node >=20、pnpm，DSH 声明下限沿用上游的 >=0.1.7-rc.1；本 fork 的实际兼容性仍需在对应宿主验证。
 
 ```sh
 pnpm install --frozen-lockfile
