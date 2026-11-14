@@ -1,8 +1,8 @@
 # dsh-tokyonight-theme
 
 This is an independent fork of NoNameLeGo/dsh-catppuccin-theme.
-The user's TokyoNightPalette.md is the colour authority. Preserve its Night,
-Storm and Light base colours. Derived UI ramps live in data/tokyonight-palette.json.
+The colour authority is data/tokyonight-palette.json. Preserve the documented
+Night, Storm and Light base colours and derived UI ramps.
 
 - GUI mapping: scripts/generate-palettes.mjs. Never hand-edit palettes.ts.
 - pnpm gen:all regenerates GUI, Shiki and TUI from checked-in inputs.
@@ -13,3 +13,6 @@ Storm and Light base colours. Derived UI ramps live in data/tokyonight-palette.j
 - Preserve upstream glass geometry and registration/persistence safeguards.
 - Validate with pnpm typecheck, pnpm typecheck:tests, pnpm build and pnpm test.
 - Commit/push/publish only when requested. Do not claim live UI validation without running it.
+
+- Commit prebuilt lib/ with source changes after running pnpm build.
+- Do not add install-time build hooks; Git installs consume prebuilt runtime files.

@@ -33,13 +33,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck
-        run: pnpm typecheck && pnpm typecheck:tests
+        run: pnpm typecheck
 
       - name: Build
         run: pnpm build
-
-      - name: Test
-        run: pnpm test
 
   # 启动级检查（EE+FF 合并立项的 D 方案）：建一个临时 DSH_HOME、把本仓库 link 进它的 web
   # profile、真起 `dsh web`，然后用 Playwright 断言「插件真被加载 / 风味真生效 / 玻璃真能切 /

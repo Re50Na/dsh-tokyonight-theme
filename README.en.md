@@ -8,7 +8,8 @@ Includes GUI themes, Shiki highlighting, follow-system mode, an optional glass
 skin and dsh-TUI JSON themes. Settings use a separate `tokyonight` namespace.
 
 This fork has not been published to npm. `dsh-tokyonight-theme` is a provisional
-package name. Build locally with `pnpm install --frozen-lockfile` and `pnpm build`.
+package name. Git installs use the committed, prebuilt `lib/` files without an install-time build hook.
+For development, run `pnpm install --frozen-lockfile` and `pnpm build`, then commit the updated `lib/` alongside source changes.
 Run `pnpm gen:all` after editing `data/tokyonight-palette.json`; generation works
 offline with checked-in inputs. Validate with `pnpm typecheck`,
 `pnpm typecheck:tests` and `pnpm test`.

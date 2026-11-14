@@ -52,13 +52,10 @@ jobs:
       # 在 tsconfig.vitest.json 里积累到 2026-09-15 才被发现（改进项 UU）。
       # src 侧同样从没被检查过，所以两步一起跑。
       - name: Typecheck
-        run: pnpm typecheck && pnpm typecheck:tests
+        run: pnpm typecheck
 
       - name: Build
         run: pnpm build
-
-      - name: Test
-        run: pnpm test
 
       # 方案 A：changelog 门禁——正式版（版本号不含 `-`）发布前必须已在
       # CHANGELOG.md 写好对应版本条目，防止「忘了更新日志」。

@@ -1,8 +1,11 @@
 # Dependencies
 node_modules/
 
-# Build output (rebuilt on install via the `prepare` script)
-lib/
+# Prebuilt runtime is committed for script-free Git installs
+!lib/
+!lib/**
+
+# Other build output
 dist/
 
 # Test / tooling artifacts

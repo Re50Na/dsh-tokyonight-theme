@@ -100,8 +100,8 @@ dsh plugin --profile web add @nonamelego/dsh-catppuccin
 dsh plugin --profile web add https://github.com/Re50Na/dsh-tokyonight-theme
 ```
 
-从 git 安装时 pnpm 可能要求允许构建脚本——按 pnpm 的提示把对应包加进 profile
-`pnpm-workspace.yaml` 的 `allowBuilds` 后重跑一次即可。
+仓库已包含预构建的 `lib/` 运行文件，从 Git 安装时直接使用，无需执行本插件的安装构建脚本。
+开发时修改源码后，需要先运行 `pnpm build`，并将更新的 `lib/` 一并提交。
 
 桌面版同理，但按上面的表走：**官方壳**在插件界面里直接填 Git 地址；**社区壳**把这条命令的
 `dsh plugin --profile web add …` 换成 `dsh plugin --profile desktop add …`。
